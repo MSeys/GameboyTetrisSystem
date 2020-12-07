@@ -1,7 +1,7 @@
 #include "imgui_sdl.h"
 
-#include "SDL.h"
 
+#include "SDL2-2.0.10/include/SDL.h"
 #include "imgui.h"
 
 #include <map>
@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <functional>
 #include <unordered_map>
-
 namespace
 {
 	struct Device* CurrentDevice = nullptr;
