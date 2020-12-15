@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,15 +8,24 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{5532251a-8bd8-4500-b80c-03736fd9d5ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TetrisSystem">
+      <UniqueIdentifier>{3f46f467-7786-4cd8-a6ea-59c5a3946c10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TetrisSystem\Parts">
+      <UniqueIdentifier>{9d537c94-af46-4633-a73b-4a535571ccf6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{e5f45a8a-0a5a-4c67-9f00-c9475769b9bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TetrisSystem Utils">
+      <UniqueIdentifier>{03b06612-4f8d-4915-aed9-4a62763570a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_sdl.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
@@ -43,13 +44,34 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="TetrisSystem.h">
-      <Filter>Header Files</Filter>
+      <Filter>TetrisSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EView.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="EViewHolder.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="View_Gameboy.h">
+      <Filter>TetrisSystem\Parts</Filter>
+    </ClInclude>
+    <ClInclude Include="Structs.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="View_PixelInspector.h">
+      <Filter>TetrisSystem\Parts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Demo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -59,9 +81,6 @@
     <ClCompile Include="imgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_sdl.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui_sdl.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -69,7 +88,19 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="TetrisSystem.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>TetrisSystem</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgui\imgui.ini">
+      <Filter>imgui</Filter>
+    </None>
   </ItemGroup>
 </Project>

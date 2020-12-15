@@ -1,7 +1,7 @@
 #include "imgui_sdl.h"
 
+#include "../imgui/SDL2-2.0.10/include/SDL.h"
 
-#include "SDL2-2.0.10/include/SDL.h"
 #include "imgui.h"
 
 #include <map>
@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <functional>
 #include <unordered_map>
+
 namespace
 {
 	struct Device* CurrentDevice = nullptr;
@@ -671,5 +672,43 @@ namespace ImGuiSDL
 			initialR, initialG, initialB, initialA);
 
 		SDL_SetRenderDrawBlendMode(CurrentDevice->Renderer, blendMode);
+	}
+
+	void UpdateInput(SDL_Event* pEvent)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		int wheel = 0;
+		int mouseX, mouseY;
+		const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
+
+		if (pEvent->type == SDL_MOUSEWHEEL)
+		{
+			// Based on https://github.com/Tyyppi77/imgui_sdl/blob/master/example.cpp#L46
+			wheel = pEvent->wheel.y;
+		}
+
+		else if (pEvent->type == SDL_TEXTINPUT)
+		{
+			// Based on https://github.com/ocornut/imgui/blob/master/examples/imgui_impl_sdl.cpp#L107
+			io.AddInputCharactersUTF8(pEvent->text.text);
+		}
+
+		else if (pEvent->type == SDL_KEYDOWN || pEvent->type == SDL_KEYUP)
+		{
+			// Based on https://github.com/ocornut/imgui/blob/master/examples/imgui_impl_sdl.cpp#L92
+			const int key = pEvent->key.keysym.scancode;
+			IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+			io.KeysDown[key] = (pEvent->type == SDL_KEYDOWN);
+			io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+			io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+			io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+		}
+
+		// Based on https://github.com/Tyyppi77/imgui_sdl/blob/master/example.cpp#L55
+		// Setup low-level inputs (e.g. on Win32, GetKeyboardState(), or write to those fields from your Windows message loop handlers, etc.)
+		io.MousePos = ImVec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
+		io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+		io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+		io.MouseWheel = static_cast<float>(wheel);
 	}
 }

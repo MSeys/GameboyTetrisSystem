@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "SDL2-2.0.10/include/SDL.h"
 
 struct ImDrawData;
 struct SDL_Renderer;
@@ -14,4 +15,7 @@ namespace ImGuiSDL
 	// Call this every frame after ImGui::Render with ImGui::GetDrawData(). This will use the SDL_Renderer provided to the interfrace with Initialize
 	// to draw the contents of the draw data to the screen.
 	void Render(ImDrawData* drawData);
-};
+
+	// Added adjusted function for ImGui input - adjusted from https://matthiasseys.me/Projects/protoengine.html
+	void UpdateInput(SDL_Event* pEvent);
+}
