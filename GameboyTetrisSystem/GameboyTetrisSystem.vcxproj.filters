@@ -17,9 +17,6 @@
     <Filter Include="Helpers">
       <UniqueIdentifier>{e5f45a8a-0a5a-4c67-9f00-c9475769b9bf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="TetrisSystem Utils">
-      <UniqueIdentifier>{03b06612-4f8d-4915-aed9-4a62763570a6}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">

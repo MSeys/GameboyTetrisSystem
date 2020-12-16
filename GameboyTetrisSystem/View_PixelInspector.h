@@ -86,6 +86,9 @@ class View_PixelInspector : public EView
 		ImGui::DragInt("##PixelX", &m_PixelPosition.x);
 		ImGui::DragInt("##PixelY", &m_PixelPosition.y);
 
+		m_PixelPosition.x = Clamp<int>(0, 159, m_PixelPosition.x);
+		m_PixelPosition.y = Clamp<int>(0, 143, m_PixelPosition.y);
+		
 		ImGui::Text("Nr. Side Pixels");
 		ImGui::DragInt("##NrSidePixels", &m_NrSidePixels);
 

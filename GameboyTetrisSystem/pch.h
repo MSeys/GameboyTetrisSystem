@@ -16,3 +16,11 @@ void SafeDelete(T& pObjectToDelete)
 		pObjectToDelete = nullptr;
 	}
 }
+template<class T>
+T Clamp(T min, T max, T value)
+{
+	if (value < min) return min;
+	if (value > max) return max;
+
+	return value;
+}
