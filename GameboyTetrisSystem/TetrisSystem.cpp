@@ -31,7 +31,7 @@ void TetrisSystem::Initialize()
 	ImGuiIO& io = ImGui::GetIO();
 	io.DeltaTime = 1.0f / m_FPS; //Runs a tick behind.. (Due to while loop condition)
 
-	m_Emulator.Start();
+	// /m_Emulator.Start();
 	InitializeImGuiStyle();
 }
 

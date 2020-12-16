@@ -2,3 +2,15 @@
 x64/
 
 .vs/
+
+GameboyEmulator/Release/
+
+GameboyEmulator/Debug/
+
+GameboyTetrisSystem/Debug/
+
+GameboyTetrisSystem/Release/
+
+Release/
+
+Debug/

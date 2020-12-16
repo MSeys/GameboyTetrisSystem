@@ -28,10 +28,11 @@ void Renderer::Destroy()
 	}
 }
 
-void Renderer::RenderLineRect(const SDL_FRect& rect, const SDL_Color& color) const
+void Renderer::RenderLineRect(const rectf& rect, const SDL_Color& color) const
 {
+	SDL_Rect sdlRect{ int(rect.x), int(rect.y), int(rect.w), int(rect.h) };
 	SDL_SetRenderDrawColor(GetSDLRenderer(), color.r, color.g, color.b, color.a);
-	SDL_RenderDrawRectF(GetSDLRenderer(), &rect);
+	SDL_RenderDrawRect(GetSDLRenderer(), &sdlRect);
 	SDL_SetRenderDrawColor(GetSDLRenderer(), 0, 0, 0, 255);
 }
 
@@ -42,9 +43,10 @@ void Renderer::RenderLine(const vec2& pointA, const vec2& pointB, const SDL_Colo
 	SDL_SetRenderDrawColor(GetSDLRenderer(), 0, 0, 0, 255);
 }
 
-void Renderer::RenderFilledRect(const SDL_FRect& rect, const SDL_Color& color) const
+void Renderer::RenderFilledRect(const rectf& rect, const SDL_Color& color) const
 {
+	SDL_Rect sdlRect{ int(rect.x), int(rect.y), int(rect.w), int(rect.h) };
 	SDL_SetRenderDrawColor(GetSDLRenderer(), color.r, color.g, color.b, color.a);
-	SDL_RenderFillRectF(GetSDLRenderer(), &rect);
+	SDL_RenderFillRect(GetSDLRenderer(), &sdlRect);
 	SDL_SetRenderDrawColor(GetSDLRenderer(), 0, 0, 0, 255);
 }

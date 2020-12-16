@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "SDL2-2.0.10/include/SDL.h"
+#include "SDL.h"
 
 struct ImDrawData;
 struct SDL_Renderer;

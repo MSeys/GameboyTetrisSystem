@@ -14,9 +14,9 @@ public:
 	void Init(SDL_Window* window, const vec2& windowSize);
 	void Destroy();
 
-	void RenderLineRect(const SDL_FRect& rect, const SDL_Color& color) const;
+	void RenderLineRect(const rectf& rect, const SDL_Color& color) const;
 	void RenderLine(const vec2& pointA, const vec2& pointB, const SDL_Color& color) const;
-	void RenderFilledRect(const SDL_FRect& rect, const SDL_Color& color) const;
+	void RenderFilledRect(const rectf& rect, const SDL_Color& color) const;
 	
 	SDL_Renderer* GetSDLRenderer() const { return m_pRenderer; }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "../GameboyEmulator/EmulatorClean.h"
-#include "imgui/SDL2-2.0.10/include/SDL.h"
+#include "SDL.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_sdl.h"
 
