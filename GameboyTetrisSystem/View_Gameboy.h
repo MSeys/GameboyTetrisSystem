@@ -44,7 +44,6 @@ public:
 		SDL_UpdateTexture(m_pGBScreenTexture, nullptr, static_cast<void*>(pixelBuffer), 160 * sizeof(uint16_t));
 
 		ImGui::SetNextWindowSize({ 175, 200 });
-		//ImGui::SetNextWindowPos({ 25, 25 });
 		ImGui::Begin("View - Gameboy", nullptr, m_Flags);
 		ImGui::Image(m_pGBScreenTexture, { 160, 144 });
 

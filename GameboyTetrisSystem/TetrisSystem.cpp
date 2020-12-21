@@ -5,6 +5,7 @@
 #include "EViewHolder.h"
 #include "View_Gameboy.h"
 #include "View_PixelInspector.h"
+#include "View_System_Playfield.h"
 
 #define GuiColor ImVec4{ 0, 118.f / 255.f, 210.f / 255.f, 1.f }
 
@@ -27,6 +28,8 @@ void TetrisSystem::Initialize()
 
 	EViewHolder::GetInstance().AddView<View_Gameboy>()->SetSystem(this);
 	EViewHolder::GetInstance().AddView<View_PixelInspector>()->SetSystem(this);
+	m_pView_Playfield = EViewHolder::GetInstance().AddView<View_System_Playfield>();
+	m_pView_Playfield->SetSystem(this);
 	
 	ImGuiIO& io = ImGui::GetIO();
 	io.DeltaTime = 1.0f / m_FPS; //Runs a tick behind.. (Due to while loop condition)
@@ -54,6 +57,8 @@ void TetrisSystem::Run()
 		SDL_RenderClear(Renderer::GetInstance().GetSDLRenderer());
 
 		UpdatePixelBuffer();
+
+		m_pView_Playfield->Update();
 		EViewHolder::GetInstance().DrawViews();
 
 		ImGui::Render();

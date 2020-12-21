@@ -197,6 +197,7 @@
     <ClInclude Include="TetrisSystem.h" />
     <ClInclude Include="View_Gameboy.h" />
     <ClInclude Include="View_PixelInspector.h" />
+    <ClInclude Include="View_System_Playfield.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui_tables.cpp" />

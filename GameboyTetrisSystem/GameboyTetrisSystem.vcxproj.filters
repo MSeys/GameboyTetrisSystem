@@ -67,6 +67,9 @@
     <ClInclude Include="View_PixelInspector.h">
       <Filter>TetrisSystem\Parts</Filter>
     </ClInclude>
+    <ClInclude Include="View_System_Playfield.h">
+      <Filter>TetrisSystem\Parts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
