@@ -47,8 +47,8 @@ TetrisPiece SystemUtils::GetPiece(const TetrisBlocksContainer& blocks)
 		}
 	}
 	
-	const int countFirstRow = std::count(transposedBlocks[0].cbegin(), transposedBlocks[0].cend(), true);
-	const int countSecondRow = std::count(transposedBlocks[1].cbegin(), transposedBlocks[1].cend(), true);
+	const unsigned int countFirstRow = unsigned(std::count(transposedBlocks[0].cbegin(), transposedBlocks[0].cend(), true));
+	const unsigned int countSecondRow = unsigned(std::count(transposedBlocks[1].cbegin(), transposedBlocks[1].cend(), true));
 	
 	if(countFirstRow == 4 && countSecondRow == 0)
 		return TetrisPiece::I_PIECE;
