@@ -2,8 +2,9 @@
 #include <vector>
 
 #include "pch.h"
-
-class View_System_Playfield;
+class SystemView_Playfield;
+class SystemView_NextPiece;
+class SystemView_CurrentPiece;
 
 class TetrisSystem
 {
@@ -30,7 +31,9 @@ private:
 	gbee::Emulator& m_Emulator;
 	std::vector<std::vector<uint8_t>> m_PixelBuffer;
 
-	View_System_Playfield* m_pView_Playfield;
+	SystemView_Playfield* m_pView_Playfield;
+	SystemView_NextPiece* m_pView_NextPiece;
+	SystemView_CurrentPiece* m_pView_CurrentPiece;
 	
 	void SetKeyState(const SDL_Event& event) const;
 	void UpdatePixelBuffer();

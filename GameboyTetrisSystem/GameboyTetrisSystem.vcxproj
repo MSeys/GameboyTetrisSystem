@@ -193,11 +193,13 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Singleton.h" />
-    <ClInclude Include="Structs.h" />
+    <ClInclude Include="SystemUtils.h" />
+    <ClInclude Include="SystemView_CurrentPiece.h" />
+    <ClInclude Include="SystemView_NextPiece.h" />
     <ClInclude Include="TetrisSystem.h" />
     <ClInclude Include="View_Gameboy.h" />
     <ClInclude Include="View_PixelInspector.h" />
-    <ClInclude Include="View_System_Playfield.h" />
+    <ClInclude Include="SystemView_Playfield.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui_tables.cpp" />
@@ -208,6 +210,7 @@
     <ClCompile Include="imgui\imgui_sdl.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="SystemUtils.cpp" />
     <ClCompile Include="TetrisSystem.cpp" />
   </ItemGroup>
   <ItemGroup>

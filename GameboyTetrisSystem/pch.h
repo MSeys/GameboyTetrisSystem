@@ -4,23 +4,13 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_sdl.h"
 
-#include "Structs.h"
-#include "TetrisSystem.h"
+#include "SystemUtils.h"
 
-template<class T>
-void SafeDelete(T& pObjectToDelete)
-{
-	if (pObjectToDelete != nullptr)
-	{
-		delete(pObjectToDelete);
-		pObjectToDelete = nullptr;
-	}
-}
-template<class T>
-T Clamp(T min, T max, T value)
-{
-	if (value < min) return min;
-	if (value > max) return max;
-
-	return value;
-}
+constexpr auto BLOCK_SIZE = 8;
+constexpr auto OTHER_SIDE = BLOCK_SIZE - 1;
+constexpr auto GAMEBOY_SCREEN_X = 160;
+constexpr auto GAMEBOY_SCREEN_Y = 144;
+constexpr auto CORNERS = 4;
+constexpr auto REQ_CORNERS = 2;
+constexpr auto PIECES = 7;
+constexpr uint8_t COLOR_BLACK = 3;

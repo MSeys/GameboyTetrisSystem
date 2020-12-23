@@ -1,5 +1,5 @@
 #pragma once
-#include "pch.h"
+#include "TetrisSystem.h"
 #include <utility>
 
 // Class originates from my personal (private) project - https://matthiasseys.me/Projects/crea2dengine.html

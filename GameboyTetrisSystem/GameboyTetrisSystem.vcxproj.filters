@@ -11,11 +11,14 @@
     <Filter Include="TetrisSystem">
       <UniqueIdentifier>{3f46f467-7786-4cd8-a6ea-59c5a3946c10}</UniqueIdentifier>
     </Filter>
-    <Filter Include="TetrisSystem\Parts">
-      <UniqueIdentifier>{9d537c94-af46-4633-a73b-4a535571ccf6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Helpers">
       <UniqueIdentifier>{e5f45a8a-0a5a-4c67-9f00-c9475769b9bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TetrisSystem\HelperViews">
+      <UniqueIdentifier>{8efcfbf1-1ba2-40cf-986b-858bfcd8dbc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TetrisSystem\SystemViews">
+      <UniqueIdentifier>{9d537c94-af46-4633-a73b-4a535571ccf6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,20 +58,26 @@
     <ClInclude Include="Singleton.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="View_Gameboy.h">
-      <Filter>TetrisSystem\Parts</Filter>
-    </ClInclude>
-    <ClInclude Include="Structs.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="View_PixelInspector.h">
-      <Filter>TetrisSystem\Parts</Filter>
+    <ClInclude Include="SystemView_Playfield.h">
+      <Filter>TetrisSystem\SystemViews</Filter>
     </ClInclude>
-    <ClInclude Include="View_System_Playfield.h">
-      <Filter>TetrisSystem\Parts</Filter>
+    <ClInclude Include="SystemView_NextPiece.h">
+      <Filter>TetrisSystem\SystemViews</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemUtils.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="View_Gameboy.h">
+      <Filter>TetrisSystem\HelperViews</Filter>
+    </ClInclude>
+    <ClInclude Include="View_PixelInspector.h">
+      <Filter>TetrisSystem\HelperViews</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemView_CurrentPiece.h">
+      <Filter>TetrisSystem\SystemViews</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +104,9 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemUtils.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
