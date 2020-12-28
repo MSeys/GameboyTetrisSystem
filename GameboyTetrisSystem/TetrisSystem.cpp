@@ -2,19 +2,12 @@
 
 #include "Renderer.h"
 
-#include "EViewHolder.h"
-#include "View_Gameboy.h"
-#include "View_PixelInspector.h"
-#include "SystemView_Playfield.h"
-#include "SystemView_NextPiece.h"
-#include "SystemView_CurrentPiece.h"
-
 #define GuiColor ImVec4{ 0, 118.f / 255.f, 210.f / 255.f, 1.f }
 
 TetrisSystem::TetrisSystem(gbee::Emulator& emulator, const vec2& windowSize)
-	: m_WindowSize(windowSize), m_Emulator(emulator)
+	: m_WindowSize(windowSize), m_Emulator(emulator), m_SystemControl()
 {
-	m_PixelBuffer.resize(160, std::vector<uint8_t>(144));
+	m_PixelBuffer.resize(GAMEBOY_SCREEN_X, std::vector<uint8_t>(GAMEBOY_SCREEN_Y));
 }
 
 void TetrisSystem::Initialize()
@@ -27,22 +20,13 @@ void TetrisSystem::Initialize()
 		SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 	
 	Renderer::GetInstance().Init(m_pWindow, m_WindowSize);
-
-	EViewHolder::GetInstance().AddView<View_Gameboy>()->SetSystem(this);
-	EViewHolder::GetInstance().AddView<View_PixelInspector>()->SetSystem(this);
-	m_pView_Playfield = EViewHolder::GetInstance().AddView<SystemView_Playfield>();
-	m_pView_Playfield->SetSystem(this);
-
-	m_pView_NextPiece = EViewHolder::GetInstance().AddView<SystemView_NextPiece>();
-	m_pView_NextPiece->SetSystem(this);
-
-	m_pView_CurrentPiece = EViewHolder::GetInstance().AddView<SystemView_CurrentPiece>();
-	m_pView_CurrentPiece->SetSystem(this);
 	
 	ImGuiIO& io = ImGui::GetIO();
 	io.DeltaTime = 1.0f / m_FPS; //Runs a tick behind.. (Due to while loop condition)
 
 	InitializeImGuiStyle();
+
+	m_SystemControl.Initialize(this);
 }
 
 void TetrisSystem::Run()
@@ -65,11 +49,9 @@ void TetrisSystem::Run()
 
 		UpdatePixelBuffer();
 
-		m_pView_Playfield->Update();
-		m_pView_NextPiece->Update();
-		m_pView_CurrentPiece->Update();
-		EViewHolder::GetInstance().DrawViews();
-
+		m_SystemControl.Update();
+		m_SystemControl.DrawGUI();
+		
 		ImGui::Render();
 		ImGuiSDL::Render(ImGui::GetDrawData());
 
@@ -124,11 +106,11 @@ void TetrisSystem::SetKeyState(const SDL_Event& event) const
 void TetrisSystem::UpdatePixelBuffer()
 {
 	auto bitBuffer = m_Emulator.GetFrameBuffer(0);
-	for(int pw{}; pw < 160; pw++)
+	for(int pw{}; pw < GAMEBOY_SCREEN_X; pw++)
 	{
-		for(int ph{}; ph < 144; ph++)
+		for(int ph{}; ph < GAMEBOY_SCREEN_Y; ph++)
 		{
-			int i = pw + ph * 160;
+			int i = pw + ph * GAMEBOY_SCREEN_X;
 			const uint8_t val{ uint8_t((bitBuffer[i * 2] << 1) | uint8_t(bitBuffer[i * 2 + 1])) };
 			m_PixelBuffer[pw][ph] = val;
 		}

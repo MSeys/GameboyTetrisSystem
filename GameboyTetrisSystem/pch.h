@@ -13,4 +13,7 @@ constexpr auto GAMEBOY_SCREEN_Y = 144;
 constexpr auto CORNERS = 4;
 constexpr auto REQ_CORNERS = 2;
 constexpr auto PIECES = 7;
+constexpr uint8_t COLOR_WHITE = 0;
+constexpr uint8_t COLOR_LIGHTGREY = 1;
+constexpr uint8_t COLOR_DARKGREY = 2;
 constexpr uint8_t COLOR_BLACK = 3;

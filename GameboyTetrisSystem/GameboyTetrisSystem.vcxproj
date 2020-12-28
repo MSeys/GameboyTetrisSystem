@@ -197,6 +197,7 @@
     <ClInclude Include="SystemView_CurrentPiece.h" />
     <ClInclude Include="SystemView_NextPiece.h" />
     <ClInclude Include="TetrisSystem.h" />
+    <ClInclude Include="TetrisSystemControl.h" />
     <ClInclude Include="View_Gameboy.h" />
     <ClInclude Include="View_PixelInspector.h" />
     <ClInclude Include="SystemView_Playfield.h" />
@@ -212,6 +213,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SystemUtils.cpp" />
     <ClCompile Include="TetrisSystem.cpp" />
+    <ClCompile Include="TetrisSystemControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameboyEmulator\GameboyEmulator.vcxproj">

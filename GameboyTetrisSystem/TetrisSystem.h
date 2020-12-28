@@ -2,9 +2,7 @@
 #include <vector>
 
 #include "pch.h"
-class SystemView_Playfield;
-class SystemView_NextPiece;
-class SystemView_CurrentPiece;
+#include "TetrisSystemControl.h"
 
 class TetrisSystem
 {
@@ -15,7 +13,7 @@ public:
 	void Run();
 	void Quit();
 	
-	const std::vector<std::vector<uint8_t>>& GetPixelBuffer() const { return m_PixelBuffer; }
+	const GameboyBuffer& GetPixelBuffer() const { return m_PixelBuffer; }
 	const gbee::Emulator& GetEmulator() const { return m_Emulator; }
 	const uint16_t* GetColors() const { return m_Colors; }
 	const SDL_Color* GetSDLColors() const { return m_SDLColors; }
@@ -29,11 +27,8 @@ private:
 	const SDL_Color m_SDLColors[4]{ { 255, 255, 255, 255 }, { 170, 170, 170, 255 }, { 85, 85, 85, 255 }, { 0, 0, 0, 255 } };
 	
 	gbee::Emulator& m_Emulator;
-	std::vector<std::vector<uint8_t>> m_PixelBuffer;
-
-	SystemView_Playfield* m_pView_Playfield;
-	SystemView_NextPiece* m_pView_NextPiece;
-	SystemView_CurrentPiece* m_pView_CurrentPiece;
+	GameboyBuffer m_PixelBuffer;
+	TetrisSystemControl m_SystemControl;
 	
 	void SetKeyState(const SDL_Event& event) const;
 	void UpdatePixelBuffer();

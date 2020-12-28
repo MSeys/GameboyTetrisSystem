@@ -79,6 +79,7 @@
     <ClInclude Include="SystemView_CurrentPiece.h">
       <Filter>TetrisSystem\SystemViews</Filter>
     </ClInclude>
+    <ClInclude Include="TetrisSystemControl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -109,6 +110,7 @@
     <ClCompile Include="SystemUtils.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="TetrisSystemControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui\imgui.ini">

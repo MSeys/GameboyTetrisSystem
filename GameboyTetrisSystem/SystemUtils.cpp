@@ -1,9 +1,8 @@
 #include "SystemUtils.h"
 
 #include "pch.h"
-#include "Renderer.h"
 
-void SystemUtils::SetBlocks(TetrisBlocksContainer& blocks, const ivec2& startPos, const std::vector<std::vector<uint8_t>>& pixelBuffer)
+void SystemUtils::CheckTetrisBlocks(TetrisBlocksContainer& blocks, const ivec2& startPos, const GameboyBuffer& pixelBuffer)
 {
 	const int columns{ int(blocks.size()) }, rows{ int(blocks[0].size()) };
 	
@@ -24,28 +23,29 @@ void SystemUtils::SetBlocks(TetrisBlocksContainer& blocks, const ivec2& startPos
 				corners[3] = pixelBuffer[startPixel.x + OTHER_SIDE][startPixel.y + OTHER_SIDE] == COLOR_BLACK;
 
 			blocks[col][row] = std::count(corners.cbegin(), corners.cend(), true) >= REQ_CORNERS;
-
-			if (blocks[col][row])
-			{
-				Renderer::GetInstance().RenderFilledRect(
-					{ float(col * BLOCK_SIZE), float(row * BLOCK_SIZE), float(BLOCK_SIZE), float(BLOCK_SIZE) },
-					{ 255, 255, 255, 255 });
-			}
 		}
 	}
 }
 
-TetrisPiece SystemUtils::GetPiece(const TetrisBlocksContainer& blocks)
+GameboyBuffer SystemUtils::GetPixels(const ivec2& startPos, const ivec2& endPos, const GameboyBuffer& pixelBuffer)
 {
-	TetrisBlocksContainer transposedBlocks;
-	transposedBlocks.resize(blocks[0].size(), std::vector<bool>(blocks.size()));
-	
-	for (int i = 0; i < blocks.size(); ++i) {
-		for (int j = 0; j < blocks[0].size(); ++j)
+	const int xSize{ endPos.x - startPos.x + 1 }, ySize{ endPos.y - startPos.y + 1 };
+	GameboyBuffer specificPixels(xSize, std::vector<uint8_t>(ySize));
+
+	for (int x{}; x < xSize; x++)
+	{
+		for (int y{}; y < ySize; y++)
 		{
-			transposedBlocks[j][i] = blocks[i][j];
+			specificPixels[x][y] = pixelBuffer[startPos.x + x][startPos.y + y];
 		}
 	}
+
+	return specificPixels;
+}
+
+TetrisPiece SystemUtils::GetPiece(const TetrisBlocksContainer& blocks)
+{
+	auto transposedBlocks = Transpose(blocks);
 	
 	const unsigned int countFirstRow = unsigned(std::count(transposedBlocks[0].cbegin(), transposedBlocks[0].cend(), true));
 	const unsigned int countSecondRow = unsigned(std::count(transposedBlocks[1].cbegin(), transposedBlocks[1].cend(), true));
@@ -90,4 +90,34 @@ std::string SystemUtils::TetrisPieceToString(const TetrisPiece& piece)
 	case TetrisPiece::NO_PIECE: return "No Piece";
 	}
 	return "Never happens";
+}
+
+std::string SystemUtils::TetrisMenuToString(const TetrisMenu& menu)
+{
+	switch(menu)
+	{
+	case TetrisMenu::CREDITS: return "Credits";
+	case TetrisMenu::START: return "Start";
+	case TetrisMenu::GAME_SELECT: return "Game Select";
+	case TetrisMenu::LEVEL_SELECT: return "Level Select";
+	case TetrisMenu::PLAY: return "Play";
+	case TetrisMenu::GAME_OVER: return "Game Over";
+	}
+
+	return "Never happens";
+}
+
+TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& container)
+{
+	TetrisBlocksContainer transposedBlocks;
+	transposedBlocks.resize(container[0].size(), std::vector<bool>(container.size()));
+
+	for (int i = 0; i < container.size(); ++i) {
+		for (int j = 0; j < container[0].size(); ++j)
+		{
+			transposedBlocks[j][i] = container[i][j];
+		}
+	}
+
+	return transposedBlocks;
 }

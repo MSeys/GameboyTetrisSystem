@@ -50,3 +50,21 @@ void Renderer::RenderFilledRect(const rectf& rect, const SDL_Color& color) const
 	SDL_RenderFillRect(GetSDLRenderer(), &sdlRect);
 	SDL_SetRenderDrawColor(GetSDLRenderer(), 0, 0, 0, 255);
 }
+
+void Renderer::DrawTetrisBlocks(const TetrisBlocksContainer& blocks, const SDL_Color& color) const
+{
+	const int columns{ int(blocks.size()) }, rows{ int(blocks[0].size()) };
+
+	for (int col{}; col < columns; col++)
+	{
+		for (int row{}; row < rows; row++)
+		{
+			if (blocks[col][row])
+			{
+				RenderFilledRect(
+					{ float(col * BLOCK_SIZE), float(row * BLOCK_SIZE), float(BLOCK_SIZE), float(BLOCK_SIZE) },
+					color);
+			}
+		}
+	}
+}
