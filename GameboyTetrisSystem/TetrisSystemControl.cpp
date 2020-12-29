@@ -47,16 +47,25 @@ void TetrisSystemControl::Update()
 	}
 }
 
-void TetrisSystemControl::DrawGUI()
+void TetrisSystemControl::DrawGUI() const
 {
 	EViewHolder::GetInstance().DrawViews();
 	
 	ImGui::Begin("System View - System Control", nullptr, ImGuiWindowFlags_NoCollapse);
 
+	ImGui::Text("System Data");
+	ImGui::Separator();
+	ImGui::Text(std::string("Current Piece: " + SystemUtils::TetrisPieceToString(m_pView_CurrentPiece->GetCurrentPiece())).c_str());
+	ImGui::Text(std::string("Next Piece: " + SystemUtils::TetrisPieceToString(m_pView_NextPiece->GetNextPiece())).c_str());
+
+	ImGui::Spacing();
+	
 	ImGui::Text("Screen Checking");
 	ImGui::Separator();
 	ImGui::Text(std::string("Current Screen: " + SystemUtils::TetrisMenuToString(m_CurrentMenu)).c_str());
 	ImGui::Text(std::string("Score Pos: " + m_ScoreStart.ToString() + " ==> " + m_ScoreEnd.ToString()).c_str());
+	ImGui::Text(std::string("Game Menu Pos: " + m_GameMenuStart.ToString() + " ==> " + m_GameMenuEnd.ToString()).c_str());
+	ImGui::Text(std::string("Game Over Pos: " + m_GameOverStart.ToString() + " ==> " + m_GameOverEnd.ToString()).c_str());
 	
 	ImGui::Spacing();
 	
@@ -73,7 +82,6 @@ TetrisMenu TetrisSystemControl::CheckMenu() const
 	const auto R1 = SystemUtils::GetPixels({ 0, 0 }, { GAMEBOY_SCREEN_X - 1, 0 }, m_pSystem->GetPixelBuffer());
 	const auto R2 = SystemUtils::GetPixels({ 0, 1 }, { GAMEBOY_SCREEN_X - 1, 1 }, m_pSystem->GetPixelBuffer());
 
-	
 	const int nrBlackR1 = SystemUtils::CountVector2D<uint8_t>(R1, COLOR_BLACK);
 	const int nrWhiteR1 = SystemUtils::CountVector2D<uint8_t>(R1, COLOR_WHITE);
 
@@ -109,7 +117,7 @@ TetrisMenu TetrisSystemControl::CheckMenu() const
 
 bool TetrisSystemControl::CheckScore()
 {
-	auto currentScoreBuffer = SystemUtils::GetPixels(m_ScoreStart, m_ScoreEnd, m_pSystem->GetPixelBuffer());
+	const auto currentScoreBuffer = SystemUtils::GetPixels(m_ScoreStart, m_ScoreEnd, m_pSystem->GetPixelBuffer());
 	if(m_ScoreBuffer != currentScoreBuffer)
 	{
 		m_ScoreBuffer = currentScoreBuffer;

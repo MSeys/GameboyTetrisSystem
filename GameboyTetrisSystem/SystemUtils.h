@@ -116,7 +116,7 @@ namespace SystemUtils
 
 		for (int i{}; i < int(vector2d.size()); i++)
 		{
-			count += std::count(vector2d[i].cbegin(), vector2d[i].cend(), value);
+			count += int(std::count(vector2d[i].cbegin(), vector2d[i].cend(), value));
 		}
 
 		return count;
