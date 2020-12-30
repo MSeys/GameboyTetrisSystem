@@ -12,7 +12,7 @@ public:
 
 	void Initialize(TetrisSystem* pSystem);
 	void Update();
-	void DrawGUI();
+	void DrawGUI() const;
 
 private:
 	TetrisSystem* m_pSystem{};

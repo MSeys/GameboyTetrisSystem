@@ -7,6 +7,7 @@
 #include "SystemView_Playfield.h"
 #include "SystemView_NextPiece.h"
 #include "SystemView_CurrentPiece.h"
+#include "View_BlockPrediction.h"
 
 void TetrisSystemControl::Initialize(TetrisSystem* pSystem)
 {
@@ -22,6 +23,10 @@ void TetrisSystemControl::Initialize(TetrisSystem* pSystem)
 
 	m_pView_CurrentPiece = EViewHolder::GetInstance().AddView<SystemView_CurrentPiece>();
 	m_pView_CurrentPiece->SetSystem(pSystem);
+
+	auto pView_BlockPrediction = EViewHolder::GetInstance().AddView<View_BlockPrediction>();
+	pView_BlockPrediction->SetSystem(pSystem);
+	pView_BlockPrediction->SetViewPlayfield(m_pView_Playfield);
 }
 
 void TetrisSystemControl::Update()

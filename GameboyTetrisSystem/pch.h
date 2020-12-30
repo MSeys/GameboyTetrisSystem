@@ -6,6 +6,8 @@
 
 #include "SystemUtils.h"
 
+constexpr auto TETRIS_COLUMNS = 10;
+constexpr auto TETRIS_ROWS = 18;
 constexpr auto BLOCK_SIZE = 8;
 constexpr auto OTHER_SIDE = BLOCK_SIZE - 1;
 constexpr auto GAMEBOY_SCREEN_X = 160;

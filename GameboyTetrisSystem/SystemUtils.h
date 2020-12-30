@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "../GameboyEmulator/EmulatorClean.h"
+
 typedef std::vector<std::vector<bool>> TetrisBlocksContainer;
 typedef std::vector<std::vector<uint8_t>> GameboyBuffer;
+
 
 struct vec2
 {
@@ -42,13 +45,19 @@ struct TetrisPieceRotation
 {
 	int nrMoveLeft;
 	int nrMoveRight;
-	TetrisBlocksContainer pieceData;
+	TetrisBlocksContainer blocks;
 };
 
-struct TetrisPieceData
+enum class TetrisMoveSet{ LEFT, RIGHT, ROTATE };
+struct TetrisMove
 {
-	std::vector<TetrisPieceRotation> rotations;
+	bool valid{};
+	std::vector<TetrisMoveSet> moveSet;
+	TetrisBlocksContainer newPlayfield;
+	TetrisBlocksContainer blockOnly;
 };
+
+typedef std::vector<TetrisPieceRotation> TetrisPieceData;
 
 template<class T>
 void SafeDelete(T& pObjectToDelete)
@@ -78,6 +87,8 @@ enum class TetrisMenu
 	CREDITS, START, GAME_SELECT, LEVEL_SELECT, PLAY, GAME_OVER
 };
 
+
+
 namespace SystemUtils
 {
 	/**
@@ -106,6 +117,11 @@ namespace SystemUtils
 	std::string TetrisPieceToString(const TetrisPiece& piece);
 
 	std::string TetrisMenuToString(const TetrisMenu& menu);
+
+	bool IsValidMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos);
+	void AddTetrisBlock(TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos);
+
+	TetrisMove GetTetrisMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, int movement, int rotation);
 	
 	TetrisBlocksContainer Transpose(const TetrisBlocksContainer& container);
 

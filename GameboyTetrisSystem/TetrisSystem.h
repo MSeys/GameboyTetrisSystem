@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_map>
 #include <vector>
 
 #include "pch.h"
@@ -17,6 +18,7 @@ public:
 	const gbee::Emulator& GetEmulator() const { return m_Emulator; }
 	const uint16_t* GetColors() const { return m_Colors; }
 	const SDL_Color* GetSDLColors() const { return m_SDLColors; }
+	const std::unordered_map<TetrisPiece, TetrisPieceData>& GetPiecesData() const { return m_PiecesData; }
 	
 private:
 	SDL_Window* m_pWindow{};
@@ -28,10 +30,26 @@ private:
 	
 	gbee::Emulator& m_Emulator;
 	GameboyBuffer m_PixelBuffer;
+	std::unordered_map<TetrisPiece, TetrisPieceData> m_PiecesData;
 	TetrisSystemControl m_SystemControl;
 	
 	void SetKeyState(const SDL_Event& event) const;
 	void UpdatePixelBuffer();
 
 	void InitializeImGuiStyle();
+
+	/**
+	 * \brief Initializes the Piece Rotations Data
+	 * - Matrix built up as YX, transposed to XY
+	 * - Includes how many blocks it can go left / right
+	 */
+	void InitializePieces();
+	
+	void Initialize_PieceO();
+	void Initialize_PieceI();
+	void Initialize_PieceS();
+	void Initialize_PieceZ();
+	void Initialize_PieceL();
+	void Initialize_PieceJ();
+	void Initialize_PieceT();
 };

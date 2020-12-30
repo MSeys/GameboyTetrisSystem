@@ -1,5 +1,8 @@
 #include "SystemUtils.h"
 
+#include <iostream>
+
+
 #include "pch.h"
 
 void SystemUtils::CheckTetrisBlocks(TetrisBlocksContainer& blocks, const ivec2& startPos, const GameboyBuffer& pixelBuffer)
@@ -107,15 +110,114 @@ std::string SystemUtils::TetrisMenuToString(const TetrisMenu& menu)
 	return "Never happens";
 }
 
+bool SystemUtils::IsValidMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos)
+{
+	if (pos.y + tetrisBlock.blocks[0].size() > playfield[0].size())
+		return false;
+	
+	for (int x{}; x < int(tetrisBlock.blocks.size()); x++)
+	{
+		for (int y{}; y < int(tetrisBlock.blocks[0].size()); y++)
+		{
+			if (!tetrisBlock.blocks[x][y])
+				continue;
+
+			if (playfield[pos.x + x][pos.y + y])
+				return false;
+		}
+	}
+
+	return true;
+}
+
+void SystemUtils::AddTetrisBlock(TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos)
+{
+	for (int x{}; x < int(tetrisBlock.blocks.size()); x++)
+	{
+		for (int y{}; y < int(tetrisBlock.blocks[0].size()); y++)
+		{
+			if (!tetrisBlock.blocks[x][y])
+				continue;
+
+			playfield[pos.x + x][pos.y + y] = true;
+		}
+	}
+}
+
+TetrisBlocksContainer operator+(const TetrisBlocksContainer& lhs, const TetrisBlocksContainer& rhs)
+{
+	if(lhs.size() != rhs.size() || lhs[0].size() != rhs[0].size())
+	{
+		std::cout << "Incompatible Tetris Block Containers, returning empty." << std::endl;
+		return {};
+	}
+
+	TetrisBlocksContainer combined(lhs);
+	for (int x = 0; x < int(combined.size()); ++x) {
+		for (int y = 0; y < int(combined[0].size()); ++y)
+		{
+			combined[x][y] = lhs[x][y] || rhs[x][y];
+		}
+	}
+
+	return combined;
+}
+
+TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, int movement, int rotation)
+{
+	TetrisMove move;
+
+	// First column where piece is located
+	const int landedColumn = movement + std::abs(tetrisBlock.nrMoveLeft);
+
+	// Check blocks starting from top
+	for(int i{}; i < TETRIS_ROWS; i++)
+	{
+		const bool validMove{ IsValidMove(playfield, tetrisBlock, { landedColumn, i }) };
+		if(!validMove && i == 0)
+		{
+			move.valid = false;
+			return move;
+		}
+
+		if (!validMove)
+		{
+			move.blockOnly.resize(playfield.size(), std::vector<bool>(playfield[0].size()));
+			AddTetrisBlock(move.blockOnly, tetrisBlock, { landedColumn, i - 1 });
+			move.newPlayfield = playfield + move.blockOnly;
+			break;
+		}
+	}
+
+	// Calculate moveset
+	for (int i{}; i < rotation; i++)
+		move.moveSet.push_back(TetrisMoveSet::ROTATE);
+
+	if (movement < 0)
+	{
+		for (int i{}; i < std::abs(movement); i++)
+			move.moveSet.push_back(TetrisMoveSet::LEFT);
+	}
+
+	else
+	{
+		for (int i{}; i < movement; i++)
+			move.moveSet.push_back(TetrisMoveSet::RIGHT);
+	}
+
+	move.valid = true;
+	return move;
+}
+
 TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& container)
 {
 	TetrisBlocksContainer transposedBlocks;
 	transposedBlocks.resize(container[0].size(), std::vector<bool>(container.size()));
 
-	for (int i = 0; i < container.size(); ++i) {
-		for (int j = 0; j < container[0].size(); ++j)
+	for (int x = 0; x < int(container.size()); ++x) {
+		for (int y = 0; y < int(container[0].size()); ++y)
 		{
-			transposedBlocks[j][i] = container[i][j];
+			transposedBlocks[y][x] = container[x][y];
 		}
 	}
 

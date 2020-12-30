@@ -80,6 +80,9 @@
       <Filter>TetrisSystem\SystemViews</Filter>
     </ClInclude>
     <ClInclude Include="TetrisSystemControl.h" />
+    <ClInclude Include="View_BlockPrediction.h">
+      <Filter>TetrisSystem\HelperViews</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">

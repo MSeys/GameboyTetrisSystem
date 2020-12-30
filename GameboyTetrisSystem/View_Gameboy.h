@@ -18,7 +18,7 @@ class View_Gameboy : public EView
 	}
 	
 public:
-	View_Gameboy() : EView("Gameboy View", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	View_Gameboy() : EView("View - Gameboy", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
 	{
 		m_pGBScreenTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(), 
 								SDL_PIXELFORMAT_RGBA4444, 
@@ -33,18 +33,19 @@ public:
 
 	void Update() override
 	{
-		
+		uint16_t pixelBuffer[160 * 144]{};
+		CraftPixelBuffer(pixelBuffer);
+
+		SDL_UpdateTexture(m_pGBScreenTexture, nullptr, static_cast<void*>(pixelBuffer), 160 * sizeof(uint16_t));
+
 	}
 	
 	void DrawGUI() override
 	{
-		uint16_t pixelBuffer[160 * 144]{};
-		CraftPixelBuffer(pixelBuffer);
-	
-		SDL_UpdateTexture(m_pGBScreenTexture, nullptr, static_cast<void*>(pixelBuffer), 160 * sizeof(uint16_t));
-
+		Update();
+		
 		ImGui::SetNextWindowSize({ 175, 200 });
-		ImGui::Begin("View - Gameboy", nullptr, m_Flags);
+		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 		ImGui::Image(m_pGBScreenTexture, { 160, 144 });
 
 		if (ImGui::Button("(Un)pause", { -1, 0 }))

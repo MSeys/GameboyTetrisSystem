@@ -7,7 +7,7 @@ class SystemView_Playfield : public EView
 	const ivec2 m_StartPos{ 16, 7 };
 	
 	// We do one less row as it is above the current block and as the buffer has a pixel row offset
-	const int m_Columns{ 10 }, m_Rows{ 17 };
+	const int m_Columns{ TETRIS_COLUMNS }, m_Rows{ TETRIS_ROWS - 1 };
 	const int m_Width{ BLOCK_SIZE * m_Columns }, m_Height{ BLOCK_SIZE * m_Rows };
 
 	SDL_Texture* m_pDataTexture;

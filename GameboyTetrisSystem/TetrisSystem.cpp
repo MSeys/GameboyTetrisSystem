@@ -1,4 +1,4 @@
-#include "TetrisSystem.h"
+﻿#include "TetrisSystem.h"
 
 #include "Renderer.h"
 
@@ -27,6 +27,8 @@ void TetrisSystem::Initialize()
 	InitializeImGuiStyle();
 
 	m_SystemControl.Initialize(this);
+
+	InitializePieces();
 }
 
 void TetrisSystem::Run()
@@ -177,4 +179,214 @@ void TetrisSystem::InitializeImGuiStyle()
 	style->TabRounding = 2.0f;
 	style->WindowRounding = 0;
 	style->WindowTitleAlign = { 0.5f, 0.5f };
+}
+
+void TetrisSystem::InitializePieces()
+{
+	Initialize_PieceO();
+	Initialize_PieceI();
+	Initialize_PieceS();
+	Initialize_PieceZ();
+	Initialize_PieceL();
+	Initialize_PieceJ();
+	Initialize_PieceT();
+}
+
+void TetrisSystem::Initialize_PieceO()
+{
+	TetrisPieceData data;
+
+	const TetrisBlocksContainer blocks = 
+	{
+		{ true, true }, // ■ ■
+		{ true, true }	// ■ ■
+	};
+	
+	data.push_back({ 4, 4, blocks });
+	
+	m_PiecesData[TetrisPiece::O_PIECE] = data;
+}
+	
+void TetrisSystem::Initialize_PieceI()
+{
+	TetrisPieceData data;
+
+	TetrisBlocksContainer blocks =
+	{
+		{ true,  true,  true, true } // ■ ■ ■ ■
+	};
+
+	data.push_back({ 3, 3, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true },	// ■
+		{ true },	// ■
+		{ true },	// ■
+		{ true }	// ■
+	};
+	data.push_back({ 4, 5, SystemUtils::Transpose(blocks) });
+
+	m_PiecesData[TetrisPiece::I_PIECE] = data;
+}
+
+void TetrisSystem::Initialize_PieceS()
+{
+	TetrisPieceData data;
+
+	TetrisBlocksContainer blocks =
+	{
+		{ false, true, true  }, //   ■ ■
+		{ true,  true, false }	// ■ ■
+	};
+
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true,  false },	// ■
+		{ true,  true  },	// ■ ■
+		{ false, true  }	//   ■
+	};
+	data.push_back({ 3, 5, SystemUtils::Transpose(blocks) });
+
+	m_PiecesData[TetrisPiece::S_PIECE] = data;
+}
+
+void TetrisSystem::Initialize_PieceZ()
+{
+	TetrisPieceData data;
+
+	TetrisBlocksContainer blocks =
+	{
+		{ true,  true, false }, // ■ ■
+		{ false, true, true  }	//   ■ ■
+	};
+
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ false, true  },	//   ■
+		{ true,  true  },	// ■ ■
+		{ true,  false }	// ■
+	};
+	data.push_back({ 3, 5, SystemUtils::Transpose(blocks) });
+
+	m_PiecesData[TetrisPiece::Z_PIECE] = data;
+}
+
+void TetrisSystem::Initialize_PieceL()
+{
+	TetrisPieceData data;
+
+	TetrisBlocksContainer blocks =
+	{
+		{ true,  true,  true }, // ■ ■ ■
+		{ true, false, false }  // ■
+	};
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true, false  },		// ■
+		{ true, false  },		// ■
+		{ true, true   }		// ■ ■
+	};
+	data.push_back({ 4, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ false, false, true }, //     ■
+		{ true, true,   true }	// ■ ■ ■
+	};
+
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true,  true },		// ■ ■
+		{ false, true },		//   ■
+		{ false, true }			//   ■
+	};
+	data.push_back({ 3, 5, SystemUtils::Transpose(blocks) });
+
+	m_PiecesData[TetrisPiece::L_PIECE] = data;
+}
+
+void TetrisSystem::Initialize_PieceJ()
+{
+	TetrisPieceData data;
+	
+	TetrisBlocksContainer blocks =
+	{
+		{ true,  true,  true }, // ■ ■ ■
+		{ false, false, true }  //     ■
+	};
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true, true  },		// ■ ■
+		{ true, false },		// ■
+		{ true, false }			// ■
+	};
+	data.push_back({ 4, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true, false, false }, // ■
+		{ true, true,  true  }	// ■ ■ ■
+	};
+
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ false, true },		//   ■
+		{ false, true },		//   ■
+		{ true,  true }			// ■ ■
+	};
+	data.push_back({ 3, 5, SystemUtils::Transpose(blocks) });
+
+	m_PiecesData[TetrisPiece::J_PIECE] = data;
+}
+
+void TetrisSystem::Initialize_PieceT()
+{
+	TetrisPieceData data;
+	
+	TetrisBlocksContainer blocks =
+	{
+		{ true,  true, true  }, // ■ ■ ■
+		{ false, true, false }	//   ■
+	};
+
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ true, false },	// ■
+		{ true, true  },	// ■ ■
+		{ true, false }		// ■
+	};
+	data.push_back({ 4, 4, SystemUtils::Transpose(blocks) });
+	
+	blocks =
+	{
+		{ false, true, false },	//   ■
+		{ true,  true, true  }	// ■ ■ ■
+	};
+
+	data.push_back({ 3, 4, SystemUtils::Transpose(blocks) });
+
+	blocks =
+	{
+		{ false, true },	//   ■
+		{ true,  true },	// ■ ■
+		{ false, true }		//   ■
+	};
+	data.push_back({ 3, 5, SystemUtils::Transpose(blocks) });
+
+	m_PiecesData[TetrisPiece::T_PIECE] = data;
 }

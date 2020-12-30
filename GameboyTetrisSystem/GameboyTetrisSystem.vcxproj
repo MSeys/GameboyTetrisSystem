@@ -198,6 +198,7 @@
     <ClInclude Include="SystemView_NextPiece.h" />
     <ClInclude Include="TetrisSystem.h" />
     <ClInclude Include="TetrisSystemControl.h" />
+    <ClInclude Include="View_BlockPrediction.h" />
     <ClInclude Include="View_Gameboy.h" />
     <ClInclude Include="View_PixelInspector.h" />
     <ClInclude Include="SystemView_Playfield.h" />

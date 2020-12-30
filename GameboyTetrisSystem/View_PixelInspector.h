@@ -64,7 +64,7 @@ class View_PixelInspector : public EView
 	}
 	
 public:
-	View_PixelInspector() : EView("Pixel Inspector View", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	View_PixelInspector() : EView("View - Pixel Inspector", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
 	{
 		m_pPixelBufferTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
@@ -94,7 +94,7 @@ public:
 		Update();
 		
 		ImGui::SetNextWindowSize({ 300, 210 });
-		ImGui::Begin("View - Pixel Inspector", nullptr, m_Flags);
+		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 
 		if(ImGui::BeginTabBar("TabBar"))
 		{
