@@ -15,7 +15,7 @@ class SystemView_CurrentPiece : public EView
 	TetrisPiece m_CurrentPiece{ TetrisPiece::NO_PIECE };
 
 public:
-	SystemView_CurrentPiece() : EView("System View - Current Piece", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	SystemView_CurrentPiece() : EView("SV - Current Piece", ImGuiWindowFlags_NoCollapse)
 	{
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
@@ -49,7 +49,6 @@ public:
 
 	void DrawGUI() override
 	{
-		ImGui::SetNextWindowSize({ 200, 175 });
 		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 
 		ImGui::Spacing();

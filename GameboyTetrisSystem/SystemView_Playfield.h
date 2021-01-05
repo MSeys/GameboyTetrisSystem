@@ -26,7 +26,7 @@ class SystemView_Playfield : public EView
 	}
 	
 public:
-	SystemView_Playfield() : EView("System View - Playfield", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	SystemView_Playfield() : EView("SV - Playfield", ImGuiWindowFlags_NoCollapse)
 	{
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
@@ -59,11 +59,9 @@ public:
 
 	void DrawGUI() override
 	{
-		ImGui::SetNextWindowSize({ 300, 175 });
 		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 
 		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
-		ImGui::SameLine();
 
 		ImGui::PushItemWidth(120);
 		ImGui::BeginGroup();

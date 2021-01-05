@@ -18,7 +18,7 @@ class View_Gameboy : public EView
 	}
 	
 public:
-	View_Gameboy() : EView("View - Gameboy", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	View_Gameboy() : EView("Gameboy", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoDocking)
 	{
 		m_pGBScreenTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(), 
 								SDL_PIXELFORMAT_RGBA4444, 

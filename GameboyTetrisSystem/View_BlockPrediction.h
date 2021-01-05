@@ -18,7 +18,7 @@ class View_BlockPrediction : public EView
 	SystemView_Playfield* m_pView_Playfield{};
 	
 public:
-	View_BlockPrediction() : EView("View - Block Prediction", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	View_BlockPrediction() : EView("HV - Block Prediction", ImGuiWindowFlags_NoCollapse)
 	{
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
@@ -56,7 +56,6 @@ public:
 
 	void DrawGUI() override
 	{
-		ImGui::SetNextWindowSize({ 310, 200 });
 		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
 
@@ -77,12 +76,13 @@ public:
 
 		ImGui::Text("Rotation: ");
 		ImGui::SameLine();
-		ImGui::DragInt("##CurrentPieceRotation", &m_PieceRotation, 1, 0, m_CurrentPieceData.size() - 1);
+		ImGui::DragInt("##CurrentPieceRotation", &m_PieceRotation, 1, 0, int(m_CurrentPieceData.size()) - 1);
+		m_PieceRotation = Clamp<int>(0, int(m_CurrentPieceData.size()) - 1, m_PieceRotation);
 		
 		ImGui::Text("Movement: ");
 		ImGui::SameLine();
 		ImGui::DragInt("##CurrentPieceMovement", &m_PieceMovement, 1, -m_CurrentPieceData[m_PieceRotation].nrMoveLeft, m_CurrentPieceData[m_PieceRotation].nrMoveRight);
-
+		
 		if (ImGui::Button("Update Playfield", { -1, 0 }))
 			m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
 		

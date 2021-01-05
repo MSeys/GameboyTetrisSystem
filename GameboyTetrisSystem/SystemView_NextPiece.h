@@ -15,7 +15,7 @@ class SystemView_NextPiece : public EView
 	TetrisPiece m_NextPiece{ TetrisPiece::NO_PIECE };
 
 public:
-	SystemView_NextPiece() : EView("System View - Next Piece", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)
+	SystemView_NextPiece() : EView("SV - Next Piece", ImGuiWindowFlags_NoCollapse)
 	{
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
@@ -48,7 +48,6 @@ public:
 
 	void DrawGUI() override
 	{
-		ImGui::SetNextWindowSize({ 200, 175 });
 		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 
 		ImGui::Spacing();
@@ -59,13 +58,10 @@ public:
 
 		const std::string strStartPoint{ "Starting Point: (" + std::to_string(m_StartPos.x) + ", " + std::to_string(m_StartPos.y) + ")" };
 		const std::string strColRows{ "Columns x Rows: " + std::to_string(m_Columns) + " x " + std::to_string(m_Rows) };
-		const std::string strNrCorners{ "Nr. Corners: " + std::to_string(CORNERS) };
-		const std::string strNrReqCorners{ "Nr. Req. Corners: " + std::to_string(REQ_CORNERS) };
 		const std::string strTetrisPiece{ "Piece: " + SystemUtils::TetrisPieceToString(m_NextPiece) };
 		
 		ImGui::Text(strStartPoint.c_str());
 		ImGui::Text(strColRows.c_str());
-		ImGui::Text(strNrCorners.c_str());
 		ImGui::Text(strTetrisPiece.c_str());
 
 		ImGui::EndGroup();

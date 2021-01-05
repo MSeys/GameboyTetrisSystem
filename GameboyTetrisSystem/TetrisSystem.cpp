@@ -1,34 +1,28 @@
 ﻿#include "TetrisSystem.h"
 
+#include "EViewHolder.h"
+#include "View_Gameboy.h"
+#include "View_PixelInspector.h"
+#include "View_BlockPrediction.h"
+
+#include "SystemView_Playfield.h"
+#include "SystemView_NextPiece.h"
+#include "SystemView_CurrentPiece.h"
+
 #include "Renderer.h"
 
 #define GuiColor ImVec4{ 0, 118.f / 255.f, 210.f / 255.f, 1.f }
 
 TetrisSystem::TetrisSystem(gbee::Emulator& emulator, const vec2& windowSize)
-	: m_WindowSize(windowSize), m_Emulator(emulator), m_SystemControl()
+	: m_WindowSize(windowSize), m_Emulator(emulator)
 {
 	m_PixelBuffer.resize(GAMEBOY_SCREEN_X, std::vector<uint8_t>(GAMEBOY_SCREEN_Y));
 }
 
 void TetrisSystem::Initialize()
 {
-	SDL_Init(SDL_INIT_EVERYTHING);
-	
-	m_pWindow = SDL_CreateWindow("TetrisSystem - Matthias Seys",
-		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		int(m_WindowSize.x), int(m_WindowSize.y),
-		SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
-	
-	Renderer::GetInstance().Init(m_pWindow, m_WindowSize);
-	
-	ImGuiIO& io = ImGui::GetIO();
-	io.DeltaTime = 1.0f / m_FPS; //Runs a tick behind.. (Due to while loop condition)
-
-	InitializeImGuiStyle();
-
-	m_SystemControl.Initialize(this);
-
-	InitializePieces();
+	Initialize_Backend();
+	Initialize_System();
 }
 
 void TetrisSystem::Run()
@@ -37,7 +31,7 @@ void TetrisSystem::Run()
 	{
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
-			SetKeyState(e);
+			Run_SetKeyState(e);
 			ImGuiSDL::UpdateInput(&e);
 
 			if (e.type == SDL_QUIT) 
@@ -49,11 +43,8 @@ void TetrisSystem::Run()
 		SDL_SetRenderDrawColor(Renderer::GetInstance().GetSDLRenderer(), 114, 144, 154, 255);
 		SDL_RenderClear(Renderer::GetInstance().GetSDLRenderer());
 
-		UpdatePixelBuffer();
-
-		m_SystemControl.Update();
-		m_SystemControl.DrawGUI();
-		
+		Run_Internal();
+				
 		ImGui::Render();
 		ImGuiSDL::Render(ImGui::GetDrawData());
 
@@ -69,57 +60,25 @@ void TetrisSystem::Quit()
 	SDL_Quit();
 }
 
-void TetrisSystem::SetKeyState(const SDL_Event& event) const
+void TetrisSystem::Initialize_Backend()
 {
-	if (event.type != SDL_KEYDOWN && event.type != SDL_KEYUP) return;
+	SDL_Init(SDL_INIT_EVERYTHING);
 
-	gbee::Key key;
-	switch (event.key.keysym.sym) {
-	case SDLK_a:
-		key = gbee::aButton;
-		break;
-	case SDLK_d:
-		key = gbee::bButton;
-		break;
-	case SDLK_RETURN:
-		key = gbee::start;
-		break;
-	case SDLK_SPACE:
-		key = gbee::select;
-		break;
-	case SDLK_RIGHT:
-		key = gbee::right;
-		break;
-	case SDLK_LEFT:
-		key = gbee::left;
-		break;
-	case SDLK_UP:
-		key = gbee::up;
-		break;
-	case SDLK_DOWN:
-		key = gbee::down;
-		break;
-	default:
-		return;
-	}
-	m_Emulator.SetKeyState(key, event.type == SDL_KEYDOWN, 0);
+	m_pWindow = SDL_CreateWindow("TetrisSystem - Matthias Seys",
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		int(m_WindowSize.x), int(m_WindowSize.y),
+		SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+
+	Renderer::GetInstance().Init(m_pWindow, m_WindowSize);
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.DeltaTime = 1.0f / m_FPS; //Runs a tick behind.. (Due to while loop condition)
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+	Initialize_ImGuiStyle();
 }
 
-void TetrisSystem::UpdatePixelBuffer()
-{
-	auto bitBuffer = m_Emulator.GetFrameBuffer(0);
-	for(int pw{}; pw < GAMEBOY_SCREEN_X; pw++)
-	{
-		for(int ph{}; ph < GAMEBOY_SCREEN_Y; ph++)
-		{
-			int i = pw + ph * GAMEBOY_SCREEN_X;
-			const uint8_t val{ uint8_t((bitBuffer[i * 2] << 1) | uint8_t(bitBuffer[i * 2 + 1])) };
-			m_PixelBuffer[pw][ph] = val;
-		}
-	}
-}
-
-void TetrisSystem::InitializeImGuiStyle()
+void TetrisSystem::Initialize_ImGuiStyle()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 	ImVec4* colors = style->Colors;
@@ -127,8 +86,8 @@ void TetrisSystem::InitializeImGuiStyle()
 	colors[ImGuiCol_FrameBg] = ImVec4(0.160f, 0.160f, 0.160f, 1.000f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.200f, 0.200f, 0.200f, 1.000f);
 	colors[ImGuiCol_FrameBgActive] = ImVec4(0.280f, 0.280f, 0.280f, 1.000f);
-	colors[ImGuiCol_TitleBg] = GuiColor;
-	colors[ImGuiCol_TitleBgActive] = GuiColor;
+	colors[ImGuiCol_TitleBg] = ImVec4(0.148f, 0.148f, 0.148f, 1.000f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.148f, 0.148f, 0.148f, 1.000f);
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.148f, 0.148f, 0.148f, 1.000f);
 	colors[ImGuiCol_MenuBarBg] = ImVec4(0.195f, 0.195f, 0.195f, 1.000f);
 	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.160f, 0.160f, 0.160f, 1.000f);
@@ -170,19 +129,34 @@ void TetrisSystem::InitializeImGuiStyle()
 
 	style->ChildRounding = 4.0f;
 	style->FrameBorderSize = 1.0f;
-	style->FrameRounding = 0;
+	style->FrameRounding = 2.0f;
 	style->GrabMinSize = 7.0f;
 	style->PopupRounding = 2.0f;
 	style->ScrollbarRounding = 12.0f;
 	style->ScrollbarSize = 13.0f;
 	style->TabBorderSize = 1.0f;
 	style->TabRounding = 2.0f;
-	style->WindowRounding = 0;
+	style->WindowRounding = 4.0f;
 	style->WindowTitleAlign = { 0.5f, 0.5f };
 }
 
-void TetrisSystem::InitializePieces()
+void TetrisSystem::Initialize_System()
 {
+	EViewHolder::GetInstance().AddView<View_Gameboy>()->SetSystem(this);
+	EViewHolder::GetInstance().AddView<View_PixelInspector>()->SetSystem(this);
+	m_pView_Playfield = EViewHolder::GetInstance().AddView<SystemView_Playfield>();
+	m_pView_Playfield->SetSystem(this);
+
+	m_pView_NextPiece = EViewHolder::GetInstance().AddView<SystemView_NextPiece>();
+	m_pView_NextPiece->SetSystem(this);
+
+	m_pView_CurrentPiece = EViewHolder::GetInstance().AddView<SystemView_CurrentPiece>();
+	m_pView_CurrentPiece->SetSystem(this);
+
+	auto pView_BlockPrediction = EViewHolder::GetInstance().AddView<View_BlockPrediction>();
+	pView_BlockPrediction->SetSystem(this);
+	pView_BlockPrediction->SetViewPlayfield(m_pView_Playfield);
+	
 	Initialize_PieceO();
 	Initialize_PieceI();
 	Initialize_PieceS();
@@ -191,6 +165,182 @@ void TetrisSystem::InitializePieces()
 	Initialize_PieceJ();
 	Initialize_PieceT();
 }
+
+void TetrisSystem::Run_SetKeyState(const SDL_Event& event) const
+{
+	if (event.type != SDL_KEYDOWN && event.type != SDL_KEYUP) return;
+
+	gbee::Key key;
+	switch (event.key.keysym.sym) {
+	case SDLK_a:
+		key = gbee::aButton;
+		break;
+	case SDLK_d:
+		key = gbee::bButton;
+		break;
+	case SDLK_RETURN:
+		key = gbee::start;
+		break;
+	case SDLK_SPACE:
+		key = gbee::select;
+		break;
+	case SDLK_RIGHT:
+		key = gbee::right;
+		break;
+	case SDLK_LEFT:
+		key = gbee::left;
+		break;
+	case SDLK_UP:
+		key = gbee::up;
+		break;
+	case SDLK_DOWN:
+		key = gbee::down;
+		break;
+	default:
+		return;
+	}
+	m_Emulator.SetKeyState(key, event.type == SDL_KEYDOWN, 0);
+}
+
+void TetrisSystem::Run_Internal()
+{
+	UpdatePixelBuffer();
+	UpdateSystem();
+	DrawSystemData();
+}
+
+void TetrisSystem::UpdatePixelBuffer()
+{
+	auto bitBuffer = m_Emulator.GetFrameBuffer(0);
+	for(int pw{}; pw < GAMEBOY_SCREEN_X; pw++)
+	{
+		for(int ph{}; ph < GAMEBOY_SCREEN_Y; ph++)
+		{
+			int i = pw + ph * GAMEBOY_SCREEN_X;
+			const uint8_t val{ uint8_t((bitBuffer[i * 2] << 1) | uint8_t(bitBuffer[i * 2 + 1])) };
+			m_PixelBuffer[pw][ph] = val;
+		}
+	}
+}
+
+void TetrisSystem::UpdateSystem()
+{
+	m_CurrentMenu = CheckMenu();
+	if (m_CurrentMenu == TetrisMenu::START || m_CurrentMenu == TetrisMenu::GAME_SELECT)
+	{
+		UseKey(gbee::Key::start);
+	}
+	
+	if (m_CurrentMenu == TetrisMenu::PLAY)
+	{
+		if (m_CanUpdatePlayData)
+		{
+			m_pView_Playfield->Update();
+			m_pView_NextPiece->Update();
+			m_pView_CurrentPiece->Update();
+
+			if (m_pView_CurrentPiece->GetCurrentPiece() != TetrisPiece::NO_PIECE)
+				m_CanUpdatePlayData = false;
+		}
+
+		else
+		{
+			m_CanUpdatePlayData = CheckScore();
+		}
+	}
+
+	m_EvenFrame = !m_EvenFrame;
+}
+
+void TetrisSystem::DrawSystemData() const
+{
+	EViewHolder::GetInstance().DrawViews();
+
+	ImGui::Begin("SV - System Control", nullptr, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::Text("System Data");
+	ImGui::Separator();
+	ImGui::Text(std::string("Current Piece: " + SystemUtils::TetrisPieceToString(m_pView_CurrentPiece->GetCurrentPiece())).c_str());
+	ImGui::Text(std::string("Next Piece: " + SystemUtils::TetrisPieceToString(m_pView_NextPiece->GetNextPiece())).c_str());
+
+	ImGui::Spacing();
+
+	ImGui::Text("Screen Checking");
+	ImGui::Separator();
+	ImGui::Text(std::string("Current Screen: " + SystemUtils::TetrisMenuToString(m_CurrentMenu)).c_str());
+	ImGui::Text(std::string("Score Pos: " + m_ScoreStart.ToString() + " ==> " + m_ScoreEnd.ToString()).c_str());
+	ImGui::Text(std::string("Game Menu Pos: " + m_GameMenuStart.ToString() + " ==> " + m_GameMenuEnd.ToString()).c_str());
+	ImGui::Text(std::string("Game Over Pos: " + m_GameOverStart.ToString() + " ==> " + m_GameOverEnd.ToString()).c_str());
+
+	ImGui::Spacing();
+
+	ImGui::Text("Block Checking");
+	ImGui::Separator();
+	ImGui::Text(std::string("Corner Checks: " + std::to_string(CORNERS)).c_str());
+	ImGui::Text(std::string("Req Corner: " + std::to_string(REQ_CORNERS)).c_str());
+
+	ImGui::End();
+}
+
+TetrisMenu TetrisSystem::CheckMenu() const
+{
+	const auto R1 = SystemUtils::GetPixels({ 0, 0 }, { GAMEBOY_SCREEN_X - 1, 0 }, GetPixelBuffer());
+	const auto R2 = SystemUtils::GetPixels({ 0, 1 }, { GAMEBOY_SCREEN_X - 1, 1 }, GetPixelBuffer());
+
+	const int nrBlackR1 = SystemUtils::CountVector2D<uint8_t>(R1, COLOR_BLACK);
+	const int nrWhiteR1 = SystemUtils::CountVector2D<uint8_t>(R1, COLOR_WHITE);
+
+	// START - Only start is full black on top row
+	if (nrBlackR1 == GAMEBOY_SCREEN_X)
+		return TetrisMenu::START;
+
+	// CREDITS - GAME MODE SELECT - LEVEL SELECT
+	if (nrWhiteR1 == GAMEBOY_SCREEN_X)
+	{
+		if (SystemUtils::CountVector2D<uint8_t>(GetPixelBuffer(), COLOR_LIGHTGREY) == 0)
+			return TetrisMenu::CREDITS;
+
+		const auto gamemodePart = SystemUtils::GetPixels(m_GameMenuStart, m_GameMenuEnd, GetPixelBuffer());
+		if (SystemUtils::CountVector2D<uint8_t>(gamemodePart, COLOR_LIGHTGREY) == 0)
+			return TetrisMenu::LEVEL_SELECT;
+
+		return TetrisMenu::GAME_SELECT;
+	}
+
+	const int columns{ 10 };
+	if (nrWhiteR1 >= columns * BLOCK_SIZE)
+	{
+		const auto gameOverPart = SystemUtils::GetPixels(m_GameOverStart, m_GameOverEnd, GetPixelBuffer());
+		if (SystemUtils::CountVector2D<uint8_t>(gameOverPart, COLOR_BLACK) == 0)
+			return TetrisMenu::GAME_OVER;
+
+		return TetrisMenu::PLAY;
+	}
+
+	return TetrisMenu::GAME_OVER; // If none of the above are applicable, then there is one case left of the playfield going game over (blocks come from bottom to top)
+
+}
+
+bool TetrisSystem::CheckScore()
+{
+	const auto currentScoreBuffer = SystemUtils::GetPixels(m_ScoreStart, m_ScoreEnd, GetPixelBuffer());
+	if (m_ScoreZoneBuffer != currentScoreBuffer)
+	{
+		m_ScoreZoneBuffer = currentScoreBuffer;
+		return true;
+	}
+
+	return false;
+}
+
+bool TetrisSystem::UseKey(const gbee::Key& key) const
+{
+	m_Emulator.SetKeyState(key, m_EvenFrame, 0);
+	return m_EvenFrame;
+}
+
+
+// Initializations of all Piece Rotation Data
 
 void TetrisSystem::Initialize_PieceO()
 {
