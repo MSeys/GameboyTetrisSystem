@@ -10,6 +10,7 @@
 #include "SystemView_CurrentPiece.h"
 
 #include "Renderer.h"
+#include "View_BestMovePrediction.h"
 
 #define GuiColor ImVec4{ 0, 118.f / 255.f, 210.f / 255.f, 1.f }
 
@@ -156,6 +157,10 @@ void TetrisSystem::Initialize_System()
 	auto pView_BlockPrediction = EViewHolder::GetInstance().AddView<View_BlockPrediction>();
 	pView_BlockPrediction->SetSystem(this);
 	pView_BlockPrediction->SetViewPlayfield(m_pView_Playfield);
+
+	auto pView_BestMovePrediction = EViewHolder::GetInstance().AddView<View_BestMovePrediction>();
+	pView_BestMovePrediction->SetSystem(this);
+	pView_BestMovePrediction->SetViewPlayfield(m_pView_Playfield);
 	
 	Initialize_PieceO();
 	Initialize_PieceI();

@@ -55,6 +55,22 @@ struct TetrisMove
 	std::vector<TetrisMoveSet> moveSet;
 	TetrisBlocksContainer newPlayfield;
 	TetrisBlocksContainer blockOnly;
+
+	double hScore{};
+	int hAggregateHeight{};
+	int hCompleteLines{};
+	int hHoles{};
+	int hBumpiness{};
+
+	bool operator<(const TetrisMove& other) const;
+};
+
+struct BestTetrisMove
+{
+	bool valid{};
+	double finalScore{};
+	std::vector<TetrisMoveSet> moveSet;
+	std::vector<TetrisMove> movesDepth;
 };
 
 typedef std::vector<TetrisPieceRotation> TetrisPieceData;
@@ -77,7 +93,7 @@ T Clamp(T min, T max, T value)
 	return value;
 }
 
-enum class TetrisPiece
+enum class TetrisPiece : int
 {
 	O_PIECE, I_PIECE, S_PIECE, Z_PIECE, L_PIECE, J_PIECE, T_PIECE, NO_PIECE
 };
@@ -118,10 +134,19 @@ namespace SystemUtils
 
 	std::string TetrisMenuToString(const TetrisMenu& menu);
 
+	/**
+	 * \brief Based on a given piece rotation and position, checks whether it is a valid move on the playfield
+	 * \param playfield The playfield container
+	 * \param tetrisBlock The block rotation we are checking on the playfield
+	 * \param pos the first position of where the piece would be located
+	 * \return boolean whether it is valid move
+	 */
 	bool IsValidMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos);
 	void AddTetrisBlock(TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos);
 
 	TetrisMove GetTetrisMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, int movement, int rotation);
+	std::vector<TetrisMove> GetAllTetrisMoves(const TetrisBlocksContainer& playfield, const TetrisPieceData& pieceData);
+	BestTetrisMove GetBestTetrisMove(const TetrisBlocksContainer& playfield, const std::vector<TetrisPieceData>& pieces);
 	
 	TetrisBlocksContainer Transpose(const TetrisBlocksContainer& container);
 

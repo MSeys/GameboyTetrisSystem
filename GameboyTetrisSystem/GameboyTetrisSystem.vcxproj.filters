@@ -82,6 +82,9 @@
     <ClInclude Include="View_BlockPrediction.h">
       <Filter>TetrisSystem\HelperViews</Filter>
     </ClInclude>
+    <ClInclude Include="View_BestMovePrediction.h">
+      <Filter>TetrisSystem\HelperViews</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">

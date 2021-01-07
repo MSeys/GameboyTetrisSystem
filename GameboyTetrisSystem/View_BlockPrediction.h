@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "EView.h"
 #include "Renderer.h"
 #include "SystemView_Playfield.h"
@@ -63,32 +63,53 @@ public:
 
 		ImGui::PushItemWidth(120);
 		ImGui::BeginGroup();
+		
+		if(ImGui::BeginTabBar("##PredictionTabBar"))
+		{
+			if(ImGui::BeginTabItem("Prediction"))
+			{
+				ImGui::Text("Current Piece: ");
+				ImGui::SameLine();
+				ImGui::Combo("##CurentPieceCombo", &m_CurrentPiece, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
+				m_CurrentPieceData = m_pSystem->GetPiecesData().at(TetrisPiece(m_CurrentPiece));
 
-		if(m_LatestPredictionMove.valid)
-			ImGui::Text("Valid Move: true");
-		else
-			ImGui::Text("Valid Move: false");
-		
-		ImGui::Text("Current Piece: ");
-		ImGui::SameLine();
-		ImGui::Combo("##CurentPieceCombo", &m_CurrentPiece, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
-		m_CurrentPieceData = m_pSystem->GetPiecesData().at(TetrisPiece(m_CurrentPiece));
+				ImGui::Text("Rotation: ");
+				ImGui::SameLine();
+				ImGui::DragInt("##CurrentPieceRotation", &m_PieceRotation, 1, 0, int(m_CurrentPieceData.size()) - 1);
+				m_PieceRotation = Clamp<int>(0, int(m_CurrentPieceData.size()) - 1, m_PieceRotation);
 
-		ImGui::Text("Rotation: ");
-		ImGui::SameLine();
-		ImGui::DragInt("##CurrentPieceRotation", &m_PieceRotation, 1, 0, int(m_CurrentPieceData.size()) - 1);
-		m_PieceRotation = Clamp<int>(0, int(m_CurrentPieceData.size()) - 1, m_PieceRotation);
-		
-		ImGui::Text("Movement: ");
-		ImGui::SameLine();
-		ImGui::DragInt("##CurrentPieceMovement", &m_PieceMovement, 1, -m_CurrentPieceData[m_PieceRotation].nrMoveLeft, m_CurrentPieceData[m_PieceRotation].nrMoveRight);
-		
-		if (ImGui::Button("Update Playfield", { -1, 0 }))
-			m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
-		
-		if (ImGui::Button("Update Prediction", { -1, 0 }))
-			Update();
-		
+				ImGui::Text("Movement: ");
+				ImGui::SameLine();
+				ImGui::DragInt("##CurrentPieceMovement", &m_PieceMovement, 1, -m_CurrentPieceData[m_PieceRotation].nrMoveLeft, m_CurrentPieceData[m_PieceRotation].nrMoveRight);
+
+				if (ImGui::Button("Update Playfield", { -1, 0 }))
+					m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
+
+				if (ImGui::Button("Update Prediction", { -1, 0 }))
+					Update();			
+				
+				ImGui::EndTabItem();
+			}
+
+			if(ImGui::BeginTabItem("Prediction Data"))
+			{
+				if (m_LatestPredictionMove.valid)
+					ImGui::Text("Valid Move: true");
+				else
+					ImGui::Text("Valid Move: false");
+
+				ImGui::Text(std::string("Score: " + std::to_string(m_LatestPredictionMove.hScore)).c_str());
+				ImGui::Separator();
+				ImGui::Text(std::string("Aggregate Height: " + std::to_string(m_LatestPredictionMove.hAggregateHeight)).c_str());
+				ImGui::Text(std::string("Completed Lines: " + std::to_string(m_LatestPredictionMove.hCompleteLines)).c_str());
+				ImGui::Text(std::string("Holes: " + std::to_string(m_LatestPredictionMove.hHoles)).c_str());
+				ImGui::Text(std::string("Bumpiness: " + std::to_string(m_LatestPredictionMove.hBumpiness)).c_str());
+				
+				ImGui::EndTabItem();
+			}
+		}
+
+		ImGui::EndTabBar();	
 		ImGui::EndGroup();
 		
 		ImGui::End();

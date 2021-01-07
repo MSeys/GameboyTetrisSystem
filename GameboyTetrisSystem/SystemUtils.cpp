@@ -1,7 +1,9 @@
 #include "SystemUtils.h"
 
-#include <iostream>
 
+#include <algorithm>
+#include <iostream>
+#include <map>
 
 #include "pch.h"
 
@@ -167,14 +169,16 @@ TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, co
 {
 	TetrisMove move;
 
+	const int playfieldHeight = TETRIS_ROWS - 1;
+
 	// First column where piece is located
 	const int landedColumn = movement + std::abs(tetrisBlock.nrMoveLeft);
 
-	// Check blocks starting from top
-	for(int i{}; i < TETRIS_ROWS; i++)
+	// CALCULATE NEW PLAYFIELD
+	for (int i{}; i < TETRIS_ROWS; i++)
 	{
 		const bool validMove{ IsValidMove(playfield, tetrisBlock, { landedColumn, i }) };
-		if(!validMove && i == 0)
+		if (!validMove && i == 0)
 		{
 			move.valid = false;
 			return move;
@@ -189,7 +193,7 @@ TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, co
 		}
 	}
 
-	// Calculate moveset
+	// CALCULATE MOVES
 	for (int i{}; i < rotation; i++)
 		move.moveSet.push_back(TetrisMoveSet::ROTATE);
 
@@ -205,8 +209,131 @@ TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, co
 			move.moveSet.push_back(TetrisMoveSet::RIGHT);
 	}
 
+	// CALCULATE SCORE
+	const auto playfieldYX = Transpose(move.newPlayfield);
+	std::vector<int> oppositeColumnHeights(TETRIS_COLUMNS); // Height from 0 till when column starts
+	std::vector<int> columnHeights(TETRIS_COLUMNS); // Column Height
+	
+	//	Calculate Aggregate Height (heuristic)
+	for (int x{}; x < TETRIS_COLUMNS; x++)
+	{
+		auto findIt = std::find(move.newPlayfield[x].cbegin(), move.newPlayfield[x].cend(), true);
+		if (findIt == move.newPlayfield[x].cend())
+		{
+			oppositeColumnHeights[x] = -1;
+			continue;
+		}
+
+		oppositeColumnHeights[x] = int(std::distance(move.newPlayfield[x].cbegin(), findIt));
+		columnHeights[x] = playfieldHeight - oppositeColumnHeights[x];
+		move.hAggregateHeight += columnHeights[x];
+	}
+
+	//	Calculate Complete Lines (heuristic)
+	for(int y{}; y < playfieldHeight; y++)
+	{
+		if (std::count(playfieldYX[y].cbegin(), playfieldYX[y].cend(), true) == TETRIS_COLUMNS)
+			move.hCompleteLines++;
+	}
+
+	//	Calculate Holes (heuristic)
+	for(int x{}; x < TETRIS_COLUMNS; x++)
+	{
+		if (oppositeColumnHeights[x] == -1) continue;
+		move.hHoles += int(std::count(move.newPlayfield[x].cbegin() + oppositeColumnHeights[x], move.newPlayfield[x].cend(), false));
+	}
+
+	//	Calculate bumpiness (heuristic)
+	for(int i{}; i < int(columnHeights.size() - 1); i++)
+	{
+		move.hBumpiness += std::abs(columnHeights[i] - columnHeights[i + 1]);
+	}
+
+	//	Calculate Score based on the 4 heuristics
+	move.hScore = GA_ParamA * move.hAggregateHeight + GA_ParamB * move.hCompleteLines + GA_ParamC * move.hHoles + GA_ParamD * move.hBumpiness;
+	
 	move.valid = true;
 	return move;
+}
+
+std::vector<TetrisMove> SystemUtils::GetAllTetrisMoves(const TetrisBlocksContainer& playfield, const TetrisPieceData& pieceData)
+{
+	std::vector<TetrisMove> moves;
+	
+	// FOR EVERY ROTATION 
+	for(int rotation{}; rotation < int(pieceData.size()); rotation++)
+	{
+		// FOR EVERY POSSIBLE MOVE (HORIZONTAL)
+		for(int movement{ -pieceData[rotation].nrMoveLeft }; movement < pieceData[rotation].nrMoveRight; movement++)
+		{
+			auto move = GetTetrisMove(playfield, pieceData[rotation], movement, rotation);
+			if (move.valid)
+				moves.push_back(move);
+		}
+	}
+
+	return moves;
+}
+
+BestTetrisMove SystemUtils::GetBestTetrisMove(const TetrisBlocksContainer& playfield, const std::vector<TetrisPieceData>& pieces)
+{
+	const int lastElement{ int(pieces.size()) - 1 };
+	
+	std::vector<std::vector<TetrisMove>> allMoves(pieces.size());
+	std::map<TetrisMove, TetrisMove> moveLink; // CurrentMove ==> PreviousMove
+	
+	// FOR EVERY PIECE TO MOVE
+	for (int piece{}; piece < int(pieces.size()); piece++)
+	{
+		// IF FIRST PIECE, USE PLAYFIELD
+		if (piece == 0)
+		{
+			allMoves[piece] = GetAllTetrisMoves(playfield, pieces[piece]);
+			if(allMoves.empty())
+			{
+				return { false };
+			}
+		}
+
+		// ELSE, GENERATE FOR EVERY POSSIBLE MOVE OF PREVIOUS PIECE
+		else
+		{
+			for(int move{}; move < int(allMoves[piece - 1].size()); move++)
+			{
+				allMoves[piece] = GetAllTetrisMoves(allMoves[piece - 1][move].newPlayfield, pieces[piece]);
+
+				// MOVE LINK FOR BACKTRACK
+				for (const TetrisMove& possibleMove : allMoves[piece])
+				{
+					moveLink[possibleMove] = allMoves[piece - 1][move];
+				}
+			}
+		}
+	}
+
+	// GENERATE BEST MOVE
+	BestTetrisMove bestMove{ true };
+	bestMove.movesDepth.resize(pieces.size());
+
+	// Sort to get best move at front
+	std::sort(allMoves[lastElement].begin(), allMoves[lastElement].end(), [](const TetrisMove current, const TetrisMove other)
+	{
+		return current.hScore > other.hScore;
+	});
+
+	const TetrisMove bestDeepestPredictedMove{ allMoves[pieces.size() - 1][0] };
+
+	bestMove.finalScore = bestDeepestPredictedMove.hScore;
+	bestMove.movesDepth[lastElement] = bestDeepestPredictedMove;
+	
+	for (int i{ int(pieces.size()) - 2 }; i >= 0; i--)
+	{
+		bestMove.movesDepth[i] = moveLink.at(bestMove.movesDepth[i + 1]);
+	}
+
+	bestMove.moveSet = bestMove.movesDepth[0].moveSet;
+
+	return bestMove;
 }
 
 TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& container)
@@ -222,4 +349,9 @@ TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& contai
 	}
 
 	return transposedBlocks;
+}
+
+bool TetrisMove::operator<(const TetrisMove& other) const
+{
+	return hScore < other.hScore;
 }
