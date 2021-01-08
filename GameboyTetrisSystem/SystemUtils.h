@@ -1,4 +1,5 @@
 #pragma once
+#include <deque>
 #include <string>
 #include <vector>
 #include "../GameboyEmulator/EmulatorClean.h"
@@ -52,7 +53,7 @@ enum class TetrisMoveSet{ LEFT, RIGHT, ROTATE };
 struct TetrisMove
 {
 	bool valid{};
-	std::vector<TetrisMoveSet> moveSet;
+	std::deque<TetrisMoveSet> moveSet;
 	TetrisBlocksContainer newPlayfield;
 	TetrisBlocksContainer blockOnly;
 
@@ -68,8 +69,14 @@ struct TetrisMove
 struct BestTetrisMove
 {
 	bool valid{};
-	double finalScore{};
-	std::vector<TetrisMoveSet> moveSet;
+
+	double hScore{};
+	int hAggregateHeight{};
+	int hCompleteLines{};
+	int hHoles{};
+	int hBumpiness{};
+	
+	std::deque<TetrisMoveSet> moveSet;
 	std::vector<TetrisMove> movesDepth;
 };
 
@@ -130,10 +137,12 @@ namespace SystemUtils
 	 * \return Tetris Piece it recognizes
 	 */
 	TetrisPiece GetPiece(const TetrisBlocksContainer& blocks);
+
 	std::string TetrisPieceToString(const TetrisPiece& piece);
-
 	std::string TetrisMenuToString(const TetrisMenu& menu);
+	gbee::Key TetrisMoveSetToKey(const TetrisMoveSet& moveSet);
 
+	
 	/**
 	 * \brief Based on a given piece rotation and position, checks whether it is a valid move on the playfield
 	 * \param playfield The playfield container

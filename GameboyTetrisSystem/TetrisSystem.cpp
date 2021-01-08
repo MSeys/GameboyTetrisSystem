@@ -1,5 +1,10 @@
 ﻿#include "TetrisSystem.h"
 
+
+#include <algorithm>
+#include <iostream>
+
+
 #include "EViewHolder.h"
 #include "View_Gameboy.h"
 #include "View_PixelInspector.h"
@@ -30,6 +35,8 @@ void TetrisSystem::Run()
 {
 	while(!m_Exit)
 	{
+		ResetKeys();
+		
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
 			Run_SetKeyState(e);
@@ -233,7 +240,7 @@ void TetrisSystem::UpdateSystem()
 	m_CurrentMenu = CheckMenu();
 	if (m_CurrentMenu == TetrisMenu::START || m_CurrentMenu == TetrisMenu::GAME_SELECT)
 	{
-		UseKey(gbee::Key::start);
+		UseKey(gbee::Key::start, 4);
 	}
 	
 	if (m_CurrentMenu == TetrisMenu::PLAY)
@@ -245,16 +252,38 @@ void TetrisSystem::UpdateSystem()
 			m_pView_CurrentPiece->Update();
 
 			if (m_pView_CurrentPiece->GetCurrentPiece() != TetrisPiece::NO_PIECE)
+			{
 				m_CanUpdatePlayData = false;
+				m_CalculateMove = true;
+			}
 		}
 
 		else
 		{
+			if(m_CalculateMove && m_Frames % 3 == 0)
+			{
+				const TetrisPiece currentPiece{ m_pView_CurrentPiece->GetCurrentPiece() }, nextPiece{ m_pView_NextPiece->GetNextPiece() };
+				m_CurrentMove = SystemUtils::GetBestTetrisMove(m_pView_Playfield->GetPlayfield(), { m_PiecesData[currentPiece] });
+				m_CalculateMove = false;
+			}
+			
 			m_CanUpdatePlayData = CheckScore();
+
+			if(m_CurrentMove.valid)
+			{
+				if (m_CurrentMove.moveSet.empty())
+					SetKey(gbee::down, true);
+				
+				else if (UseKey(SystemUtils::TetrisMoveSetToKey(m_CurrentMove.moveSet[0]), 4))
+					m_CurrentMove.moveSet.pop_front();
+					
+			}
 		}
 	}
 
-	m_EvenFrame = !m_EvenFrame;
+	m_Frames++;
+	if (m_Frames == 60)
+		m_Frames = 0;
 }
 
 void TetrisSystem::DrawSystemData() const
@@ -338,10 +367,28 @@ bool TetrisSystem::CheckScore()
 	return false;
 }
 
-bool TetrisSystem::UseKey(const gbee::Key& key) const
+bool TetrisSystem::UseKey(const gbee::Key& key, int framesDelay) const
 {
-	m_Emulator.SetKeyState(key, m_EvenFrame, 0);
-	return m_EvenFrame;
+	const bool value{ m_Frames % framesDelay == 0 };
+	m_Emulator.SetKeyState(key, value, 0);
+	return value;
+}
+
+void TetrisSystem::SetKey(const gbee::Key& key, bool value) const
+{
+	m_Emulator.SetKeyState(key, value, 0);
+}
+
+void TetrisSystem::ResetKeys() const
+{
+	SetKey(gbee::aButton, false);
+	SetKey(gbee::bButton, false);
+	SetKey(gbee::start, false);
+	SetKey(gbee::select, false);
+	SetKey(gbee::left, false);
+	SetKey(gbee::right, false);
+	SetKey(gbee::up, false);
+	SetKey(gbee::down, false);
 }
 
 

@@ -71,35 +71,51 @@ public:
 		ImGui::PushItemWidth(120);
 		ImGui::BeginGroup();
 
-		ImGui::Text("Best Move Info");
-		ImGui::Spacing();
-		ImGui::Separator();
-
-		ImGui::Spacing();
-		ImGui::Spacing();
-		ImGui::Spacing();
-		
-		ImGui::Text("Moves");
-		ImGui::Spacing();
-		ImGui::Separator();
-		ImGui::Text("Moves Depth: ");
-		ImGui::SameLine();
-		ImGui::DragInt("##MovesDepth", &m_MovesDepth, 1, 1, 5);
-		m_Pieces.resize(m_MovesDepth);
-
-		for(int i{}; i < m_MovesDepth; i++)
+		if (ImGui::BeginTabBar("##PredictionTabBar"))
 		{
-			int value = int(m_Pieces[i]);
-			ImGui::Combo(std::string("##BestMovePiece" + std::to_string(i)).c_str(), &value, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
-			m_Pieces[i] = TetrisPiece(value);
+			if (ImGui::BeginTabItem("Prediction"))
+			{
+				ImGui::Text("Moves Depth: ");
+				ImGui::SameLine();
+				ImGui::DragInt("##MovesDepth", &m_MovesDepth, 1, 1, 5);
+				m_Pieces.resize(m_MovesDepth);
+
+				for (int i{}; i < m_MovesDepth; i++)
+				{
+					int value = int(m_Pieces[i]);
+					ImGui::Combo(std::string("##BestMovePiece" + std::to_string(i)).c_str(), &value, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
+					m_Pieces[i] = TetrisPiece(value);
+				}
+
+				if (ImGui::Button("Update Playfield", { -1, 0 }))
+					m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
+
+				if (ImGui::Button("Update Prediction", { -1, 0 }))
+					Update();
+
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Prediction Data"))
+			{
+				if (m_BestMove.valid)
+					ImGui::Text("Valid Move: true");
+				else
+					ImGui::Text("Valid Move: false");
+
+				ImGui::Text(std::string("Score: " + std::to_string(m_BestMove.hScore)).c_str());
+				ImGui::Separator();
+				ImGui::Text(std::string("Aggregate Height: " + std::to_string(m_BestMove.hAggregateHeight)).c_str());
+				ImGui::Text(std::string("Completed Lines: " + std::to_string(m_BestMove.hCompleteLines)).c_str());
+				ImGui::Text(std::string("Holes: " + std::to_string(m_BestMove.hHoles)).c_str());
+				ImGui::Text(std::string("Bumpiness: " + std::to_string(m_BestMove.hBumpiness)).c_str());
+
+				
+				ImGui::EndTabItem();
+			}
 		}
 
-		if (ImGui::Button("Update Playfield", { -1, 0 }))
-			m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
-
-		if (ImGui::Button("Update Prediction", { -1, 0 }))
-			Update();
-		
+		ImGui::EndTabBar();
 		ImGui::EndGroup();
 
 		ImGui::End();

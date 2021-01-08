@@ -112,6 +112,19 @@ std::string SystemUtils::TetrisMenuToString(const TetrisMenu& menu)
 	return "Never happens";
 }
 
+gbee::Key SystemUtils::TetrisMoveSetToKey(const TetrisMoveSet& moveSet)
+{
+	switch(moveSet)
+	{
+	case TetrisMoveSet::LEFT: return gbee::Key::left;
+	case TetrisMoveSet::RIGHT: return gbee::Key::right;
+	case TetrisMoveSet::ROTATE: return gbee::Key::bButton;
+	}
+
+	// shouldn't be hit
+	return gbee::Key::start;
+}
+
 bool SystemUtils::IsValidMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos)
 {
 	if (pos.y + tetrisBlock.blocks[0].size() > playfield[0].size())
@@ -264,7 +277,7 @@ std::vector<TetrisMove> SystemUtils::GetAllTetrisMoves(const TetrisBlocksContain
 	for(int rotation{}; rotation < int(pieceData.size()); rotation++)
 	{
 		// FOR EVERY POSSIBLE MOVE (HORIZONTAL)
-		for(int movement{ -pieceData[rotation].nrMoveLeft }; movement < pieceData[rotation].nrMoveRight; movement++)
+		for(int movement{ -pieceData[rotation].nrMoveLeft }; movement <= pieceData[rotation].nrMoveRight; movement++)
 		{
 			auto move = GetTetrisMove(playfield, pieceData[rotation], movement, rotation);
 			if (move.valid)
@@ -323,7 +336,12 @@ BestTetrisMove SystemUtils::GetBestTetrisMove(const TetrisBlocksContainer& playf
 
 	const TetrisMove bestDeepestPredictedMove{ allMoves[pieces.size() - 1][0] };
 
-	bestMove.finalScore = bestDeepestPredictedMove.hScore;
+	bestMove.hScore = bestDeepestPredictedMove.hScore;
+	bestMove.hAggregateHeight = bestDeepestPredictedMove.hAggregateHeight;
+	bestMove.hCompleteLines = bestDeepestPredictedMove.hCompleteLines;
+	bestMove.hHoles = bestDeepestPredictedMove.hHoles;
+	bestMove.hBumpiness = bestDeepestPredictedMove.hBumpiness;
+	
 	bestMove.movesDepth[lastElement] = bestDeepestPredictedMove;
 	
 	for (int i{ int(pieces.size()) - 2 }; i >= 0; i--)

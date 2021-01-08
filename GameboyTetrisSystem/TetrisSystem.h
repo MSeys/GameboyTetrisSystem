@@ -51,9 +51,10 @@ private:
 	const ivec2 m_GameMenuStart{ 8, 7 }, m_GameMenuEnd{ 71, 14 };
 	const ivec2 m_GameOverStart{ 120, 111 }, m_GameOverEnd{ 151, 126 };
 	
-	bool m_CanUpdatePlayData{ true };
-	bool m_EvenFrame{ true };
-
+	bool m_CanUpdatePlayData{ true }, m_CalculateMove{ false };
+	int m_Frames{};
+	BestTetrisMove m_CurrentMove{ false };
+	
 	void Initialize_Backend();
 	void Initialize_ImGuiStyle();
 	void Initialize_System();
@@ -69,7 +70,9 @@ private:
 	bool CheckScore();
 
 	// Press / Release Key with a frame delay. Uses Even Frames to set state to true.
-	bool UseKey(const gbee::Key& key) const;
+	bool UseKey(const gbee::Key& key, int framesDelay) const;
+	void SetKey(const gbee::Key& key, bool value) const;
+	void ResetKeys() const;
 	
 	void Initialize_PieceO();
 	void Initialize_PieceI();
