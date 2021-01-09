@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "../GameboyEmulator/EmulatorClean.h"
@@ -110,6 +111,7 @@ enum class TetrisMenu
 	CREDITS, START, GAME_SELECT, LEVEL_SELECT, PLAY, GAME_OVER
 };
 
+TetrisBlocksContainer operator+(const TetrisBlocksContainer& lhs, const TetrisBlocksContainer& rhs);
 
 
 namespace SystemUtils

@@ -35,7 +35,7 @@ void TetrisSystem::Run()
 {
 	while(!m_Exit)
 	{
-		ResetKeys();
+		//ResetKeys();
 		
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
@@ -263,21 +263,21 @@ void TetrisSystem::UpdateSystem()
 			if(m_CalculateMove && m_Frames % 3 == 0)
 			{
 				const TetrisPiece currentPiece{ m_pView_CurrentPiece->GetCurrentPiece() }, nextPiece{ m_pView_NextPiece->GetNextPiece() };
-				m_CurrentMove = SystemUtils::GetBestTetrisMove(m_pView_Playfield->GetPlayfield(), { m_PiecesData[currentPiece] });
+				m_CurrentMove = SystemUtils::GetBestTetrisMove(m_pView_Playfield->GetPlayfield(), { m_PiecesData[currentPiece], m_PiecesData[nextPiece] });
 				m_CalculateMove = false;
 			}
 			
 			m_CanUpdatePlayData = CheckScore();
 
-			if(m_CurrentMove.valid)
-			{
-				if (m_CurrentMove.moveSet.empty())
-					SetKey(gbee::down, true);
-				
-				else if (UseKey(SystemUtils::TetrisMoveSetToKey(m_CurrentMove.moveSet[0]), 4))
-					m_CurrentMove.moveSet.pop_front();
-					
-			}
+			// if(m_CurrentMove.valid)
+			// {
+			// 	if (m_CurrentMove.moveSet.empty())
+			// 		SetKey(gbee::down, true);
+			// 	
+			// 	else if (UseKey(SystemUtils::TetrisMoveSetToKey(m_CurrentMove.moveSet[0]), 4))
+			// 		m_CurrentMove.moveSet.pop_front();
+			// 		
+			// }
 		}
 	}
 

@@ -10,6 +10,8 @@
 gbee::Emulator emu{"Tetris(JUE)(V1.1)[!].gb", INSTANCECOUNT};
 
 int main( int argc, char *argv[] ) {
+	srand(int(time(nullptr)));
+	
 	emu.Start();
 	
 	TetrisSystem system{ emu };

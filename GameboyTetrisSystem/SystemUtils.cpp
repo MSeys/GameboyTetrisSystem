@@ -159,25 +159,6 @@ void SystemUtils::AddTetrisBlock(TetrisBlocksContainer& playfield, const TetrisP
 	}
 }
 
-TetrisBlocksContainer operator+(const TetrisBlocksContainer& lhs, const TetrisBlocksContainer& rhs)
-{
-	if(lhs.size() != rhs.size() || lhs[0].size() != rhs[0].size())
-	{
-		std::cout << "Incompatible Tetris Block Containers, returning empty." << std::endl;
-		return {};
-	}
-
-	TetrisBlocksContainer combined(lhs);
-	for (int x = 0; x < int(combined.size()); ++x) {
-		for (int y = 0; y < int(combined[0].size()); ++y)
-		{
-			combined[x][y] = lhs[x][y] || rhs[x][y];
-		}
-	}
-
-	return combined;
-}
-
 TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, int movement, int rotation)
 {
 	TetrisMove move;
@@ -372,4 +353,23 @@ TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& contai
 bool TetrisMove::operator<(const TetrisMove& other) const
 {
 	return hScore < other.hScore;
+}
+
+TetrisBlocksContainer operator+(const TetrisBlocksContainer& lhs, const TetrisBlocksContainer& rhs)
+{
+	if (lhs.size() != rhs.size() || lhs[0].size() != rhs[0].size())
+	{
+		std::cout << "Incompatible Tetris Block Containers, returning empty." << std::endl;
+		return {};
+	}
+
+	TetrisBlocksContainer combined(lhs);
+	for (int x = 0; x < int(combined.size()); ++x) {
+		for (int y = 0; y < int(combined[0].size()); ++y)
+		{
+			combined[x][y] = lhs[x][y] || rhs[x][y];
+		}
+	}
+
+	return combined;
 }

@@ -63,7 +63,12 @@ public:
 
 	void DrawGUI() override
 	{
-		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
+		if (!ImGui::Begin(m_Name.c_str(), nullptr, m_Flags))
+		{
+			ImGui::End();
+			return;
+		}
+		
 		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
 
 		ImGui::SameLine();

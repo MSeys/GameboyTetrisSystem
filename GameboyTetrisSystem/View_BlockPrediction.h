@@ -10,9 +10,13 @@ class View_BlockPrediction : public EView
 	// We do one less row as it is above the current block and as the buffer has a pixel row offset
 	const int m_Columns{ TETRIS_COLUMNS }, m_Rows{ TETRIS_ROWS - 1 };
 	const int m_Width{ BLOCK_SIZE * m_Columns }, m_Height{ BLOCK_SIZE * m_Rows };
-	int m_CurrentPiece{}, m_PieceMovement{}, m_PieceRotation{};
-	TetrisPieceData m_CurrentPieceData;
-	TetrisMove m_LatestPredictionMove;
+
+	int m_NrPieces{ 1 }, m_NrMaxPieces{ 5 }, m_CurrentPieceID{ 0 };
+	
+	std::vector<TetrisPiece> m_Pieces{};
+	std::vector<int> m_PieceMovements{}, m_PieceRotations{};
+	std::vector<TetrisMove> m_Moves{};
+	std::vector<SDL_Color> m_PieceColors{};
 
 	TetrisBlocksContainer m_PredictionPlayfield;
 	SystemView_Playfield* m_pView_Playfield{};
@@ -26,6 +30,15 @@ public:
 			m_Width, m_Height);
 
 		m_PredictionPlayfield.resize(m_Columns, std::vector<bool>(m_Rows));
+
+		m_Pieces.resize(m_NrMaxPieces);
+		m_PieceMovements.resize(m_NrMaxPieces);
+		m_PieceRotations.resize(m_NrMaxPieces);
+		m_Moves.resize(m_NrMaxPieces, { false });
+		m_PieceColors.resize(m_NrMaxPieces);
+		
+		for (SDL_Color& color : m_PieceColors)
+			color = { Uint8(rand() % 255), Uint8(rand() % 255), Uint8(rand() % 255), 255 };
 	}
 
 	~View_BlockPrediction()
@@ -37,11 +50,7 @@ public:
 	
 	void Update() override
 	{
-		m_LatestPredictionMove = SystemUtils::GetTetrisMove(m_PredictionPlayfield,
-			m_CurrentPieceData[m_PieceRotation], 
-			m_PieceMovement, m_PieceRotation);
-		
-		if(!m_LatestPredictionMove.valid)
+		if(!m_Moves[m_CurrentPieceID].valid)
 			return;
 
 		SDL_SetRenderTarget(Renderer::GetInstance().GetSDLRenderer(), m_pDataTexture);
@@ -49,69 +58,138 @@ public:
 		SDL_RenderClear(Renderer::GetInstance().GetSDLRenderer());
 
 		Renderer::GetInstance().DrawTetrisBlocks(m_PredictionPlayfield);
-		Renderer::GetInstance().DrawTetrisBlocks(m_LatestPredictionMove.blockOnly, { 0, 0, 255, 255 });
+		for (int i{}; i <= m_CurrentPieceID; i++)
+		{
+			if (!m_Moves[i].valid)
+				continue;
+			
+			Renderer::GetInstance().DrawTetrisBlocks(m_Moves[i].blockOnly, m_PieceColors[i]);
+		}
 
 		SDL_SetRenderTarget(Renderer::GetInstance().GetSDLRenderer(), nullptr);
 	}
 
+	void UpdateMove(int i)
+	{
+		TetrisBlocksContainer playfield{ m_PredictionPlayfield };
+
+		for (int id{ i - 1 }; id >= 0; id--)
+		{
+			if (!m_Moves[id].valid)
+				continue;
+			
+			playfield = playfield + m_Moves[id].blockOnly;
+		}
+		
+		m_Moves[i] = SystemUtils::GetTetrisMove(playfield,
+			m_pSystem->GetPiecesData().at(m_Pieces[i])[m_PieceRotations[i]],
+			m_PieceMovements[i], m_PieceRotations[i]);
+	}
+
+	void DrawPiecePrediction(int i)
+	{		
+		if (ImGui::BeginTabBar("##PredictionPiece"))
+		{
+			if (ImGui::BeginTabItem("Prediction"))
+			{
+				ImGui::Text("Piece: ");
+				ImGui::SameLine();
+
+				int value = int(m_Pieces[i]);
+				ImGui::Combo(std::string("##PieceCombo" + std::to_string(i)).c_str(), &value, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
+				m_Pieces[i] = TetrisPiece(value);
+
+				const auto pieceData{ m_pSystem->GetPiecesData().at(m_Pieces[i]) };
+				
+				ImGui::Text("Rotation: ");
+				ImGui::SameLine();
+				ImGui::DragInt("##CurrentPieceRotation", &m_PieceRotations[i], 1, 0, int(pieceData.size()) - 1);
+				m_PieceRotations[i] = Clamp<int>(0, int(pieceData.size()) - 1, m_PieceRotations[i]);
+
+				ImGui::Text("Movement: ");
+				ImGui::SameLine();
+				ImGui::DragInt("##CurrentPieceMovement", &m_PieceMovements[i], 1, -pieceData[m_PieceRotations[i]].nrMoveLeft, pieceData[m_PieceRotations[i]].nrMoveRight);
+				m_PieceMovements[i] = Clamp<int>(-pieceData[m_PieceRotations[i]].nrMoveLeft, pieceData[m_PieceRotations[i]].nrMoveRight, m_PieceMovements[i]);
+
+				
+				float colorF[3]{ m_PieceColors[i].r / 255.f, m_PieceColors[i].g / 255.f, m_PieceColors[i].b / 255.f };
+				ImGui::Text("Pixel Color");
+				ImGui::ColorEdit3("##PixelColor", colorF);
+				m_PieceColors[i] = { Uint8(colorF[0] * 255), Uint8(colorF[1] * 255), Uint8(colorF[2] * 255), 255 };
+				
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Prediction Data"))
+			{
+				if (m_Moves[i].valid)
+					ImGui::Text("Valid Move: true");
+				else
+					ImGui::Text("Valid Move: false");
+
+				ImGui::Text(std::string("Score: " + std::to_string(m_Moves[i].hScore)).c_str());
+				ImGui::Separator();
+				ImGui::Text(std::string("Aggregate Height: " + std::to_string(m_Moves[i].hAggregateHeight)).c_str());
+				ImGui::Text(std::string("Completed Lines: " + std::to_string(m_Moves[i].hCompleteLines)).c_str());
+				ImGui::Text(std::string("Holes: " + std::to_string(m_Moves[i].hHoles)).c_str());
+				ImGui::Text(std::string("Bumpiness: " + std::to_string(m_Moves[i].hBumpiness)).c_str());
+
+				ImGui::EndTabItem();
+			}
+		}
+
+		ImGui::EndTabBar();
+	}
+
 	void DrawGUI() override
 	{
-		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
+		if (!ImGui::Begin(m_Name.c_str(), nullptr, m_Flags))
+		{
+			ImGui::End();
+			return;
+		}
+
 		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
 
 		ImGui::SameLine();
 
 		ImGui::PushItemWidth(120);
 		ImGui::BeginGroup();
-		
-		if(ImGui::BeginTabBar("##PredictionTabBar"))
+
+		ImGui::Text("Pieces: ");
+		ImGui::SameLine();
+		if (ImGui::DragInt("##NrPieces", &m_NrPieces, 1, 1, m_NrMaxPieces))
 		{
-			if(ImGui::BeginTabItem("Prediction"))
+			if(m_CurrentPieceID >= m_NrPieces)
+				m_CurrentPieceID = m_NrPieces - 1;
+		}
+		
+		ImGui::BeginTabBar("##PredictionPieces");
+		
+		for (int i{}; i < m_NrPieces; i++)
+		{
+			if (ImGui::BeginTabItem(std::string("P" + std::to_string(i)).c_str()))
 			{
-				ImGui::Text("Current Piece: ");
-				ImGui::SameLine();
-				ImGui::Combo("##CurentPieceCombo", &m_CurrentPiece, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
-				m_CurrentPieceData = m_pSystem->GetPiecesData().at(TetrisPiece(m_CurrentPiece));
-
-				ImGui::Text("Rotation: ");
-				ImGui::SameLine();
-				ImGui::DragInt("##CurrentPieceRotation", &m_PieceRotation, 1, 0, int(m_CurrentPieceData.size()) - 1);
-				m_PieceRotation = Clamp<int>(0, int(m_CurrentPieceData.size()) - 1, m_PieceRotation);
-
-				ImGui::Text("Movement: ");
-				ImGui::SameLine();
-				ImGui::DragInt("##CurrentPieceMovement", &m_PieceMovement, 1, -m_CurrentPieceData[m_PieceRotation].nrMoveLeft, m_CurrentPieceData[m_PieceRotation].nrMoveRight);
-
-				if (ImGui::Button("Update Playfield", { -1, 0 }))
-					m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
-
-				if (ImGui::Button("Update Prediction", { -1, 0 }))
-					Update();			
+				m_CurrentPieceID = i;
 				
-				ImGui::EndTabItem();
-			}
+				ImGui::PushID(i);
+				DrawPiecePrediction(i);
+				ImGui::PopID();
 
-			if(ImGui::BeginTabItem("Prediction Data"))
-			{
-				if (m_LatestPredictionMove.valid)
-					ImGui::Text("Valid Move: true");
-				else
-					ImGui::Text("Valid Move: false");
-
-				ImGui::Text(std::string("Score: " + std::to_string(m_LatestPredictionMove.hScore)).c_str());
-				ImGui::Separator();
-				ImGui::Text(std::string("Aggregate Height: " + std::to_string(m_LatestPredictionMove.hAggregateHeight)).c_str());
-				ImGui::Text(std::string("Completed Lines: " + std::to_string(m_LatestPredictionMove.hCompleteLines)).c_str());
-				ImGui::Text(std::string("Holes: " + std::to_string(m_LatestPredictionMove.hHoles)).c_str());
-				ImGui::Text(std::string("Bumpiness: " + std::to_string(m_LatestPredictionMove.hBumpiness)).c_str());
-				
+				UpdateMove(i);
 				ImGui::EndTabItem();
 			}
 		}
 
-		ImGui::EndTabBar();	
+		ImGui::EndTabBar();
 		ImGui::EndGroup();
+
+		if (ImGui::Button("Update Playfield", { -1, 0 }))
+			m_PredictionPlayfield = m_pView_Playfield->GetPlayfield();
+
 		
 		ImGui::End();
+
+		Update();
 	}
 };
