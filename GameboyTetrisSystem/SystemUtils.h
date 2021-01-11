@@ -52,7 +52,7 @@ struct TetrisPieceRotation
 
 enum class TetrisMoveSet{ LEFT, RIGHT, ROTATE };
 struct TetrisMove
-{
+{	
 	bool valid{};
 	std::deque<TetrisMoveSet> moveSet;
 	TetrisBlocksContainer newPlayfield;
@@ -63,7 +63,8 @@ struct TetrisMove
 	int hCompleteLines{};
 	int hHoles{};
 	int hBumpiness{};
-
+	TetrisMove* pPrevMove;
+	
 	bool operator<(const TetrisMove& other) const;
 };
 
@@ -79,6 +80,8 @@ struct BestTetrisMove
 	
 	std::deque<TetrisMoveSet> moveSet;
 	std::vector<TetrisMove> movesDepth;
+
+	void SetBaseData(const TetrisMove& other);
 };
 
 typedef std::vector<TetrisPieceRotation> TetrisPieceData;

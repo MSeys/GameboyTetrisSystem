@@ -1,6 +1,5 @@
 #include "SystemUtils.h"
 
-
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -161,7 +160,7 @@ void SystemUtils::AddTetrisBlock(TetrisBlocksContainer& playfield, const TetrisP
 
 TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, int movement, int rotation)
 {
-	TetrisMove move;
+	TetrisMove move{ false };
 
 	const int playfieldHeight = TETRIS_ROWS - 1;
 
@@ -173,10 +172,7 @@ TetrisMove SystemUtils::GetTetrisMove(const TetrisBlocksContainer& playfield, co
 	{
 		const bool validMove{ IsValidMove(playfield, tetrisBlock, { landedColumn, i }) };
 		if (!validMove && i == 0)
-		{
-			move.valid = false;
 			return move;
-		}
 
 		if (!validMove)
 		{
@@ -271,68 +267,58 @@ std::vector<TetrisMove> SystemUtils::GetAllTetrisMoves(const TetrisBlocksContain
 
 BestTetrisMove SystemUtils::GetBestTetrisMove(const TetrisBlocksContainer& playfield, const std::vector<TetrisPieceData>& pieces)
 {
-	const int lastElement{ int(pieces.size()) - 1 };
-	
 	std::vector<std::vector<TetrisMove>> allMoves(pieces.size());
-	std::map<TetrisMove, TetrisMove> moveLink; // CurrentMove ==> PreviousMove
+	const int last{ int(pieces.size()) - 1 };
 	
-	// FOR EVERY PIECE TO MOVE
-	for (int piece{}; piece < int(pieces.size()); piece++)
+	// FOR EVERY PIECE TO CHECK
+	for (int p{}; p < int(pieces.size()); p++)
 	{
 		// IF FIRST PIECE, USE PLAYFIELD
-		if (piece == 0)
+		if (p == 0)
 		{
-			allMoves[piece] = GetAllTetrisMoves(playfield, pieces[piece]);
-			if(allMoves.empty())
-			{
+			allMoves[p] = GetAllTetrisMoves(playfield, pieces[p]);
+			if (allMoves[p].empty())
 				return { false };
-			}
 		}
 
 		// ELSE, GENERATE FOR EVERY POSSIBLE MOVE OF PREVIOUS PIECE
 		else
 		{
-			for(int move{}; move < int(allMoves[piece - 1].size()); move++)
+			const int prev{ p - 1 };
+			
+			for (int m{}; m < int(allMoves[prev].size()); m++)
 			{
-				allMoves[piece] = GetAllTetrisMoves(allMoves[piece - 1][move].newPlayfield, pieces[piece]);
+				// if next piece has no valid moves, then it is pointless to keep going
+				auto moves = GetAllTetrisMoves(allMoves[prev][m].newPlayfield, pieces[p]);
+				if (moves.empty())
+					return { false };
 
-				// MOVE LINK FOR BACKTRACK
-				for (const TetrisMove& possibleMove : allMoves[piece])
-				{
-					moveLink[possibleMove] = allMoves[piece - 1][move];
-				}
+				for (TetrisMove& possibleMove : moves)
+					possibleMove.pPrevMove = &allMoves[prev][m];
+				
+				allMoves[p].insert(allMoves[p].end(), moves.begin(), moves.end());
 			}
 		}
 	}
 
 	// GENERATE BEST MOVE
 	BestTetrisMove bestMove{ true };
+
+	std::sort(allMoves[last].begin(), allMoves[last].end(), [](const TetrisMove current, const TetrisMove other)
+	{ return current.hScore > other.hScore; });
+
+	bestMove.SetBaseData(allMoves[last][0]);
 	bestMove.movesDepth.resize(pieces.size());
 
-	// Sort to get best move at front
-	std::sort(allMoves[lastElement].begin(), allMoves[lastElement].end(), [](const TetrisMove current, const TetrisMove other)
-	{
-		return current.hScore > other.hScore;
-	});
+	bestMove.movesDepth[last] = allMoves[last][0];
 
-	const TetrisMove bestDeepestPredictedMove{ allMoves[pieces.size() - 1][0] };
-
-	bestMove.hScore = bestDeepestPredictedMove.hScore;
-	bestMove.hAggregateHeight = bestDeepestPredictedMove.hAggregateHeight;
-	bestMove.hCompleteLines = bestDeepestPredictedMove.hCompleteLines;
-	bestMove.hHoles = bestDeepestPredictedMove.hHoles;
-	bestMove.hBumpiness = bestDeepestPredictedMove.hBumpiness;
-	
-	bestMove.movesDepth[lastElement] = bestDeepestPredictedMove;
-	
 	for (int i{ int(pieces.size()) - 2 }; i >= 0; i--)
-	{
-		bestMove.movesDepth[i] = moveLink.at(bestMove.movesDepth[i + 1]);
-	}
+		bestMove.movesDepth[i] = *bestMove.movesDepth[i + 1].pPrevMove;
 
 	bestMove.moveSet = bestMove.movesDepth[0].moveSet;
 
 	return bestMove;
+
 }
 
 TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& container)
@@ -353,6 +339,15 @@ TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& contai
 bool TetrisMove::operator<(const TetrisMove& other) const
 {
 	return hScore < other.hScore;
+}
+
+void BestTetrisMove::SetBaseData(const TetrisMove& other)
+{
+	hScore = other.hScore;
+	hAggregateHeight = other.hAggregateHeight;
+	hCompleteLines = other.hCompleteLines;
+	hHoles = other.hHoles;
+	hBumpiness = other.hBumpiness;
 }
 
 TetrisBlocksContainer operator+(const TetrisBlocksContainer& lhs, const TetrisBlocksContainer& rhs)

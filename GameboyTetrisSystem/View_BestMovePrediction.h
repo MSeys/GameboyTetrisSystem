@@ -10,8 +10,9 @@ class View_BestMovePrediction : public EView
 	// We do one less row as it is above the current block and as the buffer has a pixel row offset
 	const int m_Columns{ TETRIS_COLUMNS }, m_Rows{ TETRIS_ROWS - 1 };
 	const int m_Width{ BLOCK_SIZE * m_Columns }, m_Height{ BLOCK_SIZE * m_Rows };
-	int m_MovesDepth{ 2 };
+	int m_MovesDepth{ 2 }, m_NrMaxDepth{ 5 };
 	std::vector<TetrisPiece> m_Pieces;
+	std::vector<SDL_Color> m_PieceColors;
 	BestTetrisMove m_BestMove;
 	
 	TetrisBlocksContainer m_PredictionPlayfield;
@@ -26,6 +27,11 @@ public:
 			m_Width, m_Height);
 
 		m_PredictionPlayfield.resize(m_Columns, std::vector<bool>(m_Rows));
+		m_Pieces.resize(m_NrMaxDepth);
+		m_PieceColors.resize(m_NrMaxDepth);
+
+		for (SDL_Color& color : m_PieceColors)
+			color = { Uint8(rand() % 255), Uint8(rand() % 255), Uint8(rand() % 255), 255 };
 	}
 
 	~View_BestMovePrediction()
@@ -53,11 +59,9 @@ public:
 		SDL_RenderClear(Renderer::GetInstance().GetSDLRenderer());
 
 		Renderer::GetInstance().DrawTetrisBlocks(m_PredictionPlayfield);
-		for (const TetrisMove& move : m_BestMove.movesDepth)
-		{
-			Renderer::GetInstance().DrawTetrisBlocks(move.blockOnly, { 0, 0, 255, 255 });
-		}
-		
+		for (int i{}; i < int(m_BestMove.movesDepth.size()); i++)
+			Renderer::GetInstance().DrawTetrisBlocks(m_BestMove.movesDepth[i].blockOnly, m_PieceColors[i]);
+
 		SDL_SetRenderTarget(Renderer::GetInstance().GetSDLRenderer(), nullptr);
 	}
 
@@ -82,14 +86,22 @@ public:
 			{
 				ImGui::Text("Moves Depth: ");
 				ImGui::SameLine();
-				ImGui::DragInt("##MovesDepth", &m_MovesDepth, 1, 1, 5);
-				m_Pieces.resize(m_MovesDepth);
+				ImGui::DragInt("##MovesDepth", &m_MovesDepth, 1, 1, m_NrMaxDepth);
 
 				for (int i{}; i < m_MovesDepth; i++)
 				{
+					ImGui::PushID(i);
+					
 					int value = int(m_Pieces[i]);
-					ImGui::Combo(std::string("##BestMovePiece" + std::to_string(i)).c_str(), &value, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
+					ImGui::Combo("##BestMovePiece", &value, "O-Piece\0I-Piece\0S-Piece\0Z-Piece\0L-Piece\0J-Piece\0T-Piece\0");
 					m_Pieces[i] = TetrisPiece(value);
+
+					float colorF[3]{ m_PieceColors[i].r / 255.f, m_PieceColors[i].g / 255.f, m_PieceColors[i].b / 255.f };
+					ImGui::SameLine();
+					ImGui::ColorEdit3("##PieceColor", colorF, ImGuiColorEditFlags_NoInputs);
+					m_PieceColors[i] = { Uint8(colorF[0] * 255), Uint8(colorF[1] * 255), Uint8(colorF[2] * 255), 255 };
+
+					ImGui::PopID();
 				}
 
 				if (ImGui::Button("Update Playfield", { -1, 0 }))

@@ -110,11 +110,11 @@ public:
 				ImGui::SameLine();
 				ImGui::DragInt("##CurrentPieceMovement", &m_PieceMovements[i], 1, -pieceData[m_PieceRotations[i]].nrMoveLeft, pieceData[m_PieceRotations[i]].nrMoveRight);
 				m_PieceMovements[i] = Clamp<int>(-pieceData[m_PieceRotations[i]].nrMoveLeft, pieceData[m_PieceRotations[i]].nrMoveRight, m_PieceMovements[i]);
-
 				
 				float colorF[3]{ m_PieceColors[i].r / 255.f, m_PieceColors[i].g / 255.f, m_PieceColors[i].b / 255.f };
-				ImGui::Text("Pixel Color");
-				ImGui::ColorEdit3("##PixelColor", colorF);
+				ImGui::Text("Piece Color: ");
+				ImGui::SameLine();
+				ImGui::ColorEdit3("##PieceColor", colorF, ImGuiColorEditFlags_NoInputs);
 				m_PieceColors[i] = { Uint8(colorF[0] * 255), Uint8(colorF[1] * 255), Uint8(colorF[2] * 255), 255 };
 				
 				ImGui::EndTabItem();
