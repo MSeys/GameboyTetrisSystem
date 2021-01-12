@@ -336,11 +336,6 @@ TetrisBlocksContainer SystemUtils::Transpose(const TetrisBlocksContainer& contai
 	return transposedBlocks;
 }
 
-bool TetrisMove::operator<(const TetrisMove& other) const
-{
-	return hScore < other.hScore;
-}
-
 void BestTetrisMove::SetBaseData(const TetrisMove& other)
 {
 	hScore = other.hScore;

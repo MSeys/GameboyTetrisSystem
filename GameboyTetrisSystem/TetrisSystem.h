@@ -47,11 +47,12 @@ private:
 
 	TetrisMenu m_CurrentMenu;
 	GameboyBuffer m_ScoreZoneBuffer;
-	const ivec2 m_ScoreStart{ 135, 22 }, m_ScoreEnd{ 159, 31 };
+	const ivec2 m_ScoreStart{ 105, 22 }, m_ScoreEnd{ 159, 31 };
 	const ivec2 m_GameMenuStart{ 8, 7 }, m_GameMenuEnd{ 71, 14 };
 	const ivec2 m_GameOverStart{ 120, 111 }, m_GameOverEnd{ 151, 126 };
+	const int m_FPSMultiplier{ 1 }, m_KeyDelay{ 2 * m_FPSMultiplier };
 	
-	bool m_CanUpdatePlayData{ true }, m_CalculateMove{ false };
+	bool m_CanUpdatePlayData{ true };
 	int m_Frames{};
 	BestTetrisMove m_CurrentMove{ false };
 	

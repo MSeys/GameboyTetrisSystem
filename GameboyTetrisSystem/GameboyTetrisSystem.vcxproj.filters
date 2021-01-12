@@ -85,6 +85,9 @@
     <ClInclude Include="View_BestMovePrediction.h">
       <Filter>TetrisSystem\HelperViews</Filter>
     </ClInclude>
+    <ClInclude Include="TimeManager.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">

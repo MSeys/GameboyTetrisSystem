@@ -15,6 +15,7 @@
 #include "SystemView_CurrentPiece.h"
 
 #include "Renderer.h"
+#include "TimeManager.h"
 #include "View_BestMovePrediction.h"
 
 #define GuiColor ImVec4{ 0, 118.f / 255.f, 210.f / 255.f, 1.f }
@@ -33,9 +34,16 @@ void TetrisSystem::Initialize()
 
 void TetrisSystem::Run()
 {
+	TimeManager::GetInstance().SetStartTime(std::chrono::steady_clock::now());
+
 	while(!m_Exit)
 	{
-		//ResetKeys();
+		TimeManager::GetInstance().SetStartTime(std::chrono::steady_clock::now());
+		TimeManager::GetInstance().SetCurrTime(std::chrono::steady_clock::now());
+		TimeManager::GetInstance().UpdateTime();
+		TimeManager::GetInstance().SetStartTime(TimeManager::GetInstance().GetCurrTime());
+		
+		ResetKeys();
 		
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
@@ -150,6 +158,8 @@ void TetrisSystem::Initialize_ImGuiStyle()
 
 void TetrisSystem::Initialize_System()
 {
+	TimeManager::GetInstance().SetFPSLimit(m_FPS * m_FPSMultiplier);
+	
 	EViewHolder::GetInstance().AddView<View_Gameboy>()->SetSystem(this);
 	EViewHolder::GetInstance().AddView<View_PixelInspector>()->SetSystem(this);
 	m_pView_Playfield = EViewHolder::GetInstance().AddView<SystemView_Playfield>();
@@ -240,50 +250,58 @@ void TetrisSystem::UpdateSystem()
 	m_CurrentMenu = CheckMenu();
 	if (m_CurrentMenu == TetrisMenu::START || m_CurrentMenu == TetrisMenu::GAME_SELECT)
 	{
-		UseKey(gbee::Key::start, 4);
+		UseKey(gbee::Key::start, m_KeyDelay);
+	}
+
+	if (m_CurrentMenu == TetrisMenu::LEVEL_SELECT)
+	{
+		UseKey(gbee::Key::start, m_KeyDelay);
 	}
 	
 	if (m_CurrentMenu == TetrisMenu::PLAY)
 	{
-		if (m_CanUpdatePlayData)
+		if(m_CanUpdatePlayData)
 		{
-			m_pView_Playfield->Update();
-			m_pView_NextPiece->Update();
 			m_pView_CurrentPiece->Update();
 
-			if (m_pView_CurrentPiece->GetCurrentPiece() != TetrisPiece::NO_PIECE)
+			if(m_pView_CurrentPiece->GetCurrentPiece() != TetrisPiece::NO_PIECE)
 			{
+				m_pView_Playfield->Update();
+				m_pView_NextPiece->Update();
+
+				const TetrisPiece currentPiece{ m_pView_CurrentPiece->GetCurrentPiece() }, nextPiece{ m_pView_NextPiece->GetNextPiece() };
+				m_CurrentMove = SystemUtils::GetBestTetrisMove(m_pView_Playfield->GetPlayfield(), { m_PiecesData[currentPiece], m_PiecesData[nextPiece] });
 				m_CanUpdatePlayData = false;
-				m_CalculateMove = true;
+
+				SetKey(gbee::down, false);
 			}
 		}
 
 		else
 		{
-			if(m_CalculateMove && m_Frames % 3 == 0)
-			{
-				const TetrisPiece currentPiece{ m_pView_CurrentPiece->GetCurrentPiece() }, nextPiece{ m_pView_NextPiece->GetNextPiece() };
-				m_CurrentMove = SystemUtils::GetBestTetrisMove(m_pView_Playfield->GetPlayfield(), { m_PiecesData[currentPiece], m_PiecesData[nextPiece] });
-				m_CalculateMove = false;
-			}
-			
 			m_CanUpdatePlayData = CheckScore();
+			if (m_CanUpdatePlayData)
+				return;
 
-			// if(m_CurrentMove.valid)
-			// {
-			// 	if (m_CurrentMove.moveSet.empty())
-			// 		SetKey(gbee::down, true);
-			// 	
-			// 	else if (UseKey(SystemUtils::TetrisMoveSetToKey(m_CurrentMove.moveSet[0]), 4))
-			// 		m_CurrentMove.moveSet.pop_front();
-			// 		
-			// }
+			
+			if (m_CurrentMove.valid)
+			{
+				if (m_CurrentMove.moveSet.empty())
+					SetKey(gbee::down, true);
+				
+				else if (UseKey(SystemUtils::TetrisMoveSetToKey(m_CurrentMove.moveSet[0]), m_KeyDelay))
+					m_CurrentMove.moveSet.pop_front();
+			}
 		}
 	}
 
+	if (m_CurrentMenu == TetrisMenu::GAME_OVER)
+	{
+		SetKey(gbee::down, false);
+		UseKey(gbee::Key::start, m_KeyDelay);
+	}
+
 	m_Frames++;
-	if (m_Frames == 60)
-		m_Frames = 0;
 }
 
 void TetrisSystem::DrawSystemData() const
@@ -341,17 +359,21 @@ TetrisMenu TetrisSystem::CheckMenu() const
 		return TetrisMenu::GAME_SELECT;
 	}
 
-	const int columns{ 10 };
-	if (nrWhiteR1 >= columns * BLOCK_SIZE)
+	if (nrWhiteR1 >= TETRIS_COLUMNS * BLOCK_SIZE)
 	{
 		const auto gameOverPart = SystemUtils::GetPixels(m_GameOverStart, m_GameOverEnd, GetPixelBuffer());
-		if (SystemUtils::CountVector2D<uint8_t>(gameOverPart, COLOR_BLACK) == 0)
+
+		const int countBlackNextPiece = SystemUtils::CountVector2D<uint8_t>(gameOverPart, COLOR_BLACK);
+
+		if (countBlackNextPiece == 0)
 			return TetrisMenu::GAME_OVER;
 
 		return TetrisMenu::PLAY;
 	}
 
-	return TetrisMenu::GAME_OVER; // If none of the above are applicable, then there is one case left of the playfield going game over (blocks come from bottom to top)
+	// If none of the above are applicable, then there is one case left of the playfield going game over (blocks come from bottom to top)
+	// Note, this is also applicable when a piece border is at the edge, hence we instead return Credits to avoid any actions taken as the next part of game over will be shown later on.
+	return TetrisMenu::CREDITS;
 
 }
 
@@ -388,7 +410,6 @@ void TetrisSystem::ResetKeys() const
 	SetKey(gbee::left, false);
 	SetKey(gbee::right, false);
 	SetKey(gbee::up, false);
-	SetKey(gbee::down, false);
 }
 
 

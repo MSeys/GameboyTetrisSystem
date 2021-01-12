@@ -63,9 +63,7 @@ struct TetrisMove
 	int hCompleteLines{};
 	int hHoles{};
 	int hBumpiness{};
-	TetrisMove* pPrevMove;
-	
-	bool operator<(const TetrisMove& other) const;
+	TetrisMove* pPrevMove{};
 };
 
 struct BestTetrisMove
