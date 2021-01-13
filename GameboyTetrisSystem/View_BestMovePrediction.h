@@ -8,8 +8,7 @@ class View_BestMovePrediction : public EView
 	SDL_Texture* m_pDataTexture;
 
 	// We do one less row as it is above the current block and as the buffer has a pixel row offset
-	const int m_Columns{ TETRIS_COLUMNS }, m_Rows{ TETRIS_ROWS - 1 };
-	const int m_Width{ BLOCK_SIZE * m_Columns }, m_Height{ BLOCK_SIZE * m_Rows };
+	
 	int m_MovesDepth{ 2 }, m_NrMaxDepth{ 5 };
 	std::vector<TetrisPiece> m_Pieces;
 	std::vector<SDL_Color> m_PieceColors;
@@ -24,9 +23,10 @@ public:
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
 			SDL_TEXTUREACCESS_TARGET,
-			m_Width, m_Height);
+			PLAYFIELD_SIZE_X, PLAYFIELD_SIZE_Y);
 
-		m_PredictionPlayfield.resize(m_Columns, std::vector<bool>(m_Rows));
+		m_PredictionPlayfield.resize(PLAYFIELD_SIZE_X / BLOCK_SIZE, std::vector<bool>(PLAYFIELD_SIZE_Y / BLOCK_SIZE));
+		
 		m_Pieces.resize(m_NrMaxDepth);
 		m_PieceColors.resize(m_NrMaxDepth);
 
@@ -73,7 +73,7 @@ public:
 			return;
 		}
 		
-		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
+		ImGui::Image(m_pDataTexture, { float(PLAYFIELD_SIZE_X), float(PLAYFIELD_SIZE_Y) });
 
 		ImGui::SameLine();
 
@@ -113,15 +113,24 @@ public:
 				ImGui::EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Prediction Data"))
+			if (ImGui::BeginTabItem(m_BestMove.valid ? "Prediction Data (Valid)" : "Prediction Data (Invalid)"))
 			{
-				if (m_BestMove.valid)
-					ImGui::Text("Valid Move: true");
-				else
-					ImGui::Text("Valid Move: false");
+				ImGui::Text("Move Set: ");
+
+				if(!m_BestMove.moveSet.empty())
+					ImGui::SameLine();
+
+				for (int i{}; i < int(m_BestMove.moveSet.size()); i++)
+				{
+					ImGui::Text(SystemUtils::TetrisMoveSetToString(m_BestMove.moveSet[i]).c_str());
+
+					if (i + 1 < m_BestMove.moveSet.size())
+						ImGui::SameLine();
+				}
+
+				ImGui::Separator();
 
 				ImGui::Text(std::string("Score: " + std::to_string(m_BestMove.hScore)).c_str());
-				ImGui::Separator();
 				ImGui::Text(std::string("Aggregate Height: " + std::to_string(m_BestMove.hAggregateHeight)).c_str());
 				ImGui::Text(std::string("Completed Lines: " + std::to_string(m_BestMove.hCompleteLines)).c_str());
 				ImGui::Text(std::string("Holes: " + std::to_string(m_BestMove.hHoles)).c_str());

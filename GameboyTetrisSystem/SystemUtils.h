@@ -144,7 +144,7 @@ namespace SystemUtils
 	std::string TetrisPieceToString(const TetrisPiece& piece);
 	std::string TetrisMenuToString(const TetrisMenu& menu);
 	gbee::Key TetrisMoveSetToKey(const TetrisMoveSet& moveSet);
-
+	std::string TetrisMoveSetToString(const TetrisMoveSet moveSet);
 	
 	/**
 	 * \brief Based on a given piece rotation and position, checks whether it is a valid move on the playfield

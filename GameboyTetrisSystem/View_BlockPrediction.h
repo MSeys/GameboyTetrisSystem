@@ -7,10 +7,6 @@ class View_BlockPrediction : public EView
 {
 	SDL_Texture* m_pDataTexture;
 
-	// We do one less row as it is above the current block and as the buffer has a pixel row offset
-	const int m_Columns{ TETRIS_COLUMNS }, m_Rows{ TETRIS_ROWS - 1 };
-	const int m_Width{ BLOCK_SIZE * m_Columns }, m_Height{ BLOCK_SIZE * m_Rows };
-
 	int m_NrPieces{ 1 }, m_NrMaxPieces{ 5 }, m_CurrentPieceID{ 0 };
 	
 	std::vector<TetrisPiece> m_Pieces{};
@@ -27,9 +23,9 @@ public:
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
 			SDL_TEXTUREACCESS_TARGET,
-			m_Width, m_Height);
+			PLAYFIELD_SIZE_X, PLAYFIELD_SIZE_Y);
 
-		m_PredictionPlayfield.resize(m_Columns, std::vector<bool>(m_Rows));
+		m_PredictionPlayfield.resize(PLAYFIELD_SIZE_X / BLOCK_SIZE, std::vector<bool>(PLAYFIELD_SIZE_Y / BLOCK_SIZE));
 
 		m_Pieces.resize(m_NrMaxPieces);
 		m_PieceMovements.resize(m_NrMaxPieces);
@@ -149,7 +145,7 @@ public:
 			return;
 		}
 
-		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
+		ImGui::Image(m_pDataTexture, { float(PLAYFIELD_SIZE_X), float(PLAYFIELD_SIZE_Y) });
 
 		ImGui::SameLine();
 

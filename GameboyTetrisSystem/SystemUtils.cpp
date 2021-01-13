@@ -124,6 +124,18 @@ gbee::Key SystemUtils::TetrisMoveSetToKey(const TetrisMoveSet& moveSet)
 	return gbee::Key::start;
 }
 
+std::string SystemUtils::TetrisMoveSetToString(const TetrisMoveSet moveSet)
+{
+	switch(moveSet)
+	{
+	case TetrisMoveSet::LEFT: return "<";
+	case TetrisMoveSet::RIGHT: return ">";
+	case TetrisMoveSet::ROTATE: return "R";
+	}
+
+	return "";
+}
+
 bool SystemUtils::IsValidMove(const TetrisBlocksContainer& playfield, const TetrisPieceRotation& tetrisBlock, const ivec2& pos)
 {
 	if (pos.y + tetrisBlock.blocks[0].size() > playfield[0].size())

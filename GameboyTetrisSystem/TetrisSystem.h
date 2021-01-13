@@ -30,7 +30,6 @@ private:
 	bool m_Exit = false;
 	const float m_FPS{ 59.73f };
 
-	
 	// GAMEBOY
 	const uint16_t m_Colors[4]{ 0xFFFF, 0x5555 * 2, 0x5555, 0x0000 };
 	const SDL_Color m_SDLColors[4]{ { 255, 255, 255, 255 }, { 170, 170, 170, 255 }, { 85, 85, 85, 255 }, { 0, 0, 0, 255 } };
@@ -40,6 +39,9 @@ private:
 
 	
 	// SYSTEM
+	bool m_SystemEnabled{ false }, m_DisableOnGameOver{ false };
+	SDL_Texture* m_pBestMoveTexture{};
+	
 	std::unordered_map<TetrisPiece, TetrisPieceData> m_PiecesData;
 	SystemView_Playfield* m_pView_Playfield{};
 	SystemView_NextPiece* m_pView_NextPiece{};
@@ -55,6 +57,7 @@ private:
 	bool m_CanUpdatePlayData{ true };
 	int m_Frames{};
 	BestTetrisMove m_CurrentMove{ false };
+	std::deque<TetrisMoveSet> m_MoveSetCopy{};
 	
 	void Initialize_Backend();
 	void Initialize_ImGuiStyle();
@@ -65,14 +68,19 @@ private:
 	
 	void UpdatePixelBuffer();
 	void UpdateSystem();
-	void DrawSystemData() const;
+	void DrawSystemData();
+	void UpdateBestMoveTexture();
 
 	TetrisMenu CheckMenu() const;
 	bool CheckScore();
 
-	// Press / Release Key with a frame delay. Uses Even Frames to set state to true.
+	// Press / Release Key with a specified frames delay
 	bool UseKey(const gbee::Key& key, int framesDelay) const;
+
+	// Set Key state with value
 	void SetKey(const gbee::Key& key, bool value) const;
+
+	// Reset all keys except down (to avoid issues when soft-dropping block)
 	void ResetKeys() const;
 	
 	void Initialize_PieceO();

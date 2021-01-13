@@ -21,6 +21,9 @@ constexpr auto TETRIS_ROWS = 18;
 constexpr auto BLOCK_SIZE = 8;
 constexpr auto OTHER_SIDE = BLOCK_SIZE - 1;
 
+constexpr auto PLAYFIELD_SIZE_X = TETRIS_COLUMNS * BLOCK_SIZE;
+constexpr auto PLAYFIELD_SIZE_Y = (TETRIS_ROWS - 1) * BLOCK_SIZE;
+
 // Block recognition
 constexpr auto CORNERS = 4;
 constexpr auto REQ_CORNERS = 2;

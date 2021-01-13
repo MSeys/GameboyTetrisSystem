@@ -6,10 +6,6 @@ class SystemView_Playfield : public EView
 {
 	const ivec2 m_StartPos{ 16, 7 };
 	
-	// We do one less row as it is above the current block and as the buffer has a pixel row offset
-	const int m_Columns{ TETRIS_COLUMNS }, m_Rows{ TETRIS_ROWS - 1 };
-	const int m_Width{ BLOCK_SIZE * m_Columns }, m_Height{ BLOCK_SIZE * m_Rows };
-
 	SDL_Texture* m_pDataTexture;
 
 	TetrisBlocksContainer m_Blocks;
@@ -31,9 +27,9 @@ public:
 		m_pDataTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
 			SDL_PIXELFORMAT_RGBA4444,
 			SDL_TEXTUREACCESS_TARGET,
-			m_Width, m_Height);
+			PLAYFIELD_SIZE_X, PLAYFIELD_SIZE_Y);
 
-		m_Blocks.resize(m_Columns, std::vector<bool>(m_Rows));
+		m_Blocks.resize(PLAYFIELD_SIZE_X / BLOCK_SIZE, std::vector<bool>(PLAYFIELD_SIZE_Y / BLOCK_SIZE));
 	}
 
 	~SystemView_Playfield()
@@ -61,13 +57,13 @@ public:
 	{
 		ImGui::Begin(m_Name.c_str(), nullptr, m_Flags);
 
-		ImGui::Image(m_pDataTexture, { float(m_Width), float(m_Height) });
+		ImGui::Image(m_pDataTexture, { float(PLAYFIELD_SIZE_X), float(PLAYFIELD_SIZE_Y) });
 
 		ImGui::PushItemWidth(120);
 		ImGui::BeginGroup();
 
 		const std::string strStartPoint{ "Starting Point: (" + std::to_string(m_StartPos.x) + ", " + std::to_string(m_StartPos.y) + ")" };
-		const std::string strColRows{ "Columns x Rows: " + std::to_string(m_Columns) + " x " + std::to_string(m_Rows) };
+		const std::string strColRows{ "Columns x Rows: " + std::to_string(PLAYFIELD_SIZE_X / BLOCK_SIZE) + " x " + std::to_string(PLAYFIELD_SIZE_Y / BLOCK_SIZE) };
 
 		ImGui::Text(strStartPoint.c_str());
 		ImGui::Text(strColRows.c_str());

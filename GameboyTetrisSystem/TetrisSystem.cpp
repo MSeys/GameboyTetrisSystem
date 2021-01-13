@@ -70,6 +70,8 @@ void TetrisSystem::Run()
 
 void TetrisSystem::Quit()
 {
+	SDL_DestroyTexture(m_pBestMoveTexture);
+	
 	Renderer::GetInstance().Destroy();
 	SDL_DestroyWindow(m_pWindow);
 	m_pWindow = nullptr;
@@ -88,7 +90,7 @@ void TetrisSystem::Initialize_Backend()
 	Renderer::GetInstance().Init(m_pWindow, m_WindowSize);
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.DeltaTime = 1.0f / m_FPS; //Runs a tick behind.. (Due to while loop condition)
+	io.DeltaTime = 1.0f / m_FPS;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	Initialize_ImGuiStyle();
@@ -186,6 +188,11 @@ void TetrisSystem::Initialize_System()
 	Initialize_PieceL();
 	Initialize_PieceJ();
 	Initialize_PieceT();
+
+	m_pBestMoveTexture = SDL_CreateTexture(Renderer::GetInstance().GetSDLRenderer(),
+		SDL_PIXELFORMAT_RGBA4444,
+		SDL_TEXTUREACCESS_TARGET,
+		PLAYFIELD_SIZE_X, PLAYFIELD_SIZE_Y);
 }
 
 void TetrisSystem::Run_SetKeyState(const SDL_Event& event) const
@@ -253,12 +260,12 @@ void TetrisSystem::UpdateSystem()
 		UseKey(gbee::Key::start, m_KeyDelay);
 	}
 
-	if (m_CurrentMenu == TetrisMenu::LEVEL_SELECT)
+	else if (m_CurrentMenu == TetrisMenu::LEVEL_SELECT)
 	{
 		UseKey(gbee::Key::start, m_KeyDelay);
 	}
 	
-	if (m_CurrentMenu == TetrisMenu::PLAY)
+	else if (m_CurrentMenu == TetrisMenu::PLAY)
 	{
 		if(m_CanUpdatePlayData)
 		{
@@ -271,9 +278,12 @@ void TetrisSystem::UpdateSystem()
 
 				const TetrisPiece currentPiece{ m_pView_CurrentPiece->GetCurrentPiece() }, nextPiece{ m_pView_NextPiece->GetNextPiece() };
 				m_CurrentMove = SystemUtils::GetBestTetrisMove(m_pView_Playfield->GetPlayfield(), { m_PiecesData[currentPiece], m_PiecesData[nextPiece] });
+				m_MoveSetCopy = m_CurrentMove.moveSet;
+
 				m_CanUpdatePlayData = false;
 
 				SetKey(gbee::down, false);
+				UpdateBestMoveTexture();
 			}
 		}
 
@@ -295,8 +305,11 @@ void TetrisSystem::UpdateSystem()
 		}
 	}
 
-	if (m_CurrentMenu == TetrisMenu::GAME_OVER)
+	else if (m_CurrentMenu == TetrisMenu::GAME_OVER)
 	{
+		if (m_DisableOnGameOver)
+			m_SystemEnabled = false;
+		
 		SetKey(gbee::down, false);
 		UseKey(gbee::Key::start, m_KeyDelay);
 	}
@@ -304,34 +317,100 @@ void TetrisSystem::UpdateSystem()
 	m_Frames++;
 }
 
-void TetrisSystem::DrawSystemData() const
+void TetrisSystem::DrawSystemData()
 {
 	EViewHolder::GetInstance().DrawViews();
 
-	ImGui::Begin("SV - System Control", nullptr, ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("SV - System", nullptr, ImGuiWindowFlags_NoCollapse);
 
-	ImGui::Text("System Data");
-	ImGui::Separator();
-	ImGui::Text(std::string("Current Piece: " + SystemUtils::TetrisPieceToString(m_pView_CurrentPiece->GetCurrentPiece())).c_str());
-	ImGui::Text(std::string("Next Piece: " + SystemUtils::TetrisPieceToString(m_pView_NextPiece->GetNextPiece())).c_str());
+	ImGui::BeginTabBar("##SystemControl");
 
-	ImGui::Spacing();
+	if(ImGui::BeginTabItem("Control / Play Data"))
+	{
+		ImGui::Text("System Control");
+		ImGui::Separator();
+		
+		ImGui::Text("System Enabled: ");
+		ImGui::SameLine();
+		ImGui::Checkbox("##SystemEnabled", &m_SystemEnabled);
+		ImGui::SameLine(190);
+		ImGui::Text("Disable on Game Over: ");
+		ImGui::SameLine();
+		ImGui::Checkbox("##DisableOnGO", &m_DisableOnGameOver);
 
-	ImGui::Text("Screen Checking");
-	ImGui::Separator();
-	ImGui::Text(std::string("Current Screen: " + SystemUtils::TetrisMenuToString(m_CurrentMenu)).c_str());
-	ImGui::Text(std::string("Score Pos: " + m_ScoreStart.ToString() + " ==> " + m_ScoreEnd.ToString()).c_str());
-	ImGui::Text(std::string("Game Menu Pos: " + m_GameMenuStart.ToString() + " ==> " + m_GameMenuEnd.ToString()).c_str());
-	ImGui::Text(std::string("Game Over Pos: " + m_GameOverStart.ToString() + " ==> " + m_GameOverEnd.ToString()).c_str());
+		ImGui::Spacing();
+		
+		ImGui::Text("Playing - Best Move");
+		ImGui::Separator();
+		
+		ImGui::Image(m_pBestMoveTexture, { float(PLAYFIELD_SIZE_X), float(PLAYFIELD_SIZE_Y) });
 
-	ImGui::Spacing();
+		ImGui::SameLine();
+		ImGui::BeginGroup();
 
-	ImGui::Text("Block Checking");
-	ImGui::Separator();
-	ImGui::Text(std::string("Corner Checks: " + std::to_string(CORNERS)).c_str());
-	ImGui::Text(std::string("Req Corner: " + std::to_string(REQ_CORNERS)).c_str());
+		ImGui::Text(m_CurrentMove.valid ? " Move Info (Valid)" : "Move Info (Invalid)");
+		ImGui::Separator();
+		
+		if(m_CurrentMove.valid)
+		{
+			ImGui::Text("Move Set: ");
+			ImGui::SameLine();
+			
+			for (int i{}; i < int(m_MoveSetCopy.size()); i++)
+			{
+				ImGui::Text(SystemUtils::TetrisMoveSetToString(m_MoveSetCopy[i]).c_str());
+
+				if (i + 1 < m_MoveSetCopy.size())
+					ImGui::SameLine();
+			}
+
+			ImGui::Separator();
+
+			ImGui::Text(std::string("Score: " + std::to_string(m_CurrentMove.movesDepth[0].hScore)).c_str());
+			ImGui::Text(std::string("Aggregate Height: " + std::to_string(m_CurrentMove.movesDepth[0].hAggregateHeight)).c_str());
+			ImGui::Text(std::string("Completed Lines: " + std::to_string(m_CurrentMove.movesDepth[0].hCompleteLines)).c_str());
+			ImGui::Text(std::string("Holes: " + std::to_string(m_CurrentMove.movesDepth[0].hHoles)).c_str());
+			ImGui::Text(std::string("Bumpiness: " + std::to_string(m_CurrentMove.movesDepth[0].hBumpiness)).c_str());
+		}
+		
+		ImGui::EndGroup();
+		ImGui::EndTabItem();
+	}
+
+	if(ImGui::BeginTabItem("System Info"))
+	{
+		ImGui::Text("Screen Checking");
+		ImGui::Separator();
+		ImGui::Text(std::string("Current Screen: " + SystemUtils::TetrisMenuToString(m_CurrentMenu)).c_str());
+		ImGui::Text(std::string("Score Pos: " + m_ScoreStart.ToString() + " ==> " + m_ScoreEnd.ToString()).c_str());
+		ImGui::Text(std::string("Game Menu Pos: " + m_GameMenuStart.ToString() + " ==> " + m_GameMenuEnd.ToString()).c_str());
+		ImGui::Text(std::string("Game Over Pos: " + m_GameOverStart.ToString() + " ==> " + m_GameOverEnd.ToString()).c_str());
+
+		ImGui::Spacing();
+
+		ImGui::Text("Block Checking");
+		ImGui::Separator();
+		ImGui::Text(std::string("Corner Checks: " + std::to_string(CORNERS)).c_str());
+		ImGui::Text(std::string("Req Corner: " + std::to_string(REQ_CORNERS)).c_str());
+
+		ImGui::EndTabItem();
+	}
+	
+	ImGui::EndTabBar();	
 
 	ImGui::End();
+}
+
+void TetrisSystem::UpdateBestMoveTexture()
+{
+	SDL_SetRenderTarget(Renderer::GetInstance().GetSDLRenderer(), m_pBestMoveTexture);
+	SDL_SetRenderDrawColor(Renderer::GetInstance().GetSDLRenderer(), 0, 0, 0, 255);
+	SDL_RenderClear(Renderer::GetInstance().GetSDLRenderer());
+
+	Renderer::GetInstance().DrawTetrisBlocks(m_CurrentMove.movesDepth[0].newPlayfield);
+	Renderer::GetInstance().DrawTetrisBlocks(m_CurrentMove.movesDepth[0].blockOnly, { 220, 50, 30, 255 });
+
+	SDL_SetRenderTarget(Renderer::GetInstance().GetSDLRenderer(), nullptr);
 }
 
 TetrisMenu TetrisSystem::CheckMenu() const
@@ -391,6 +470,9 @@ bool TetrisSystem::CheckScore()
 
 bool TetrisSystem::UseKey(const gbee::Key& key, int framesDelay) const
 {
+	if (!m_SystemEnabled)
+		return false;
+	
 	const bool value{ m_Frames % framesDelay == 0 };
 	m_Emulator.SetKeyState(key, value, 0);
 	return value;
@@ -398,6 +480,9 @@ bool TetrisSystem::UseKey(const gbee::Key& key, int framesDelay) const
 
 void TetrisSystem::SetKey(const gbee::Key& key, bool value) const
 {
+	if (!m_SystemEnabled)
+		return;
+	
 	m_Emulator.SetKeyState(key, value, 0);
 }
 

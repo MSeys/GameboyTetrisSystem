@@ -123,5 +123,8 @@
     <None Include="imgui\imgui.ini">
       <Filter>imgui</Filter>
     </None>
+    <None Include="Tetris(JUE)(V1.1)[!].gb">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
