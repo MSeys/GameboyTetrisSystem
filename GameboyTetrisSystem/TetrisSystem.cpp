@@ -470,7 +470,7 @@ bool TetrisSystem::CheckScore()
 
 bool TetrisSystem::UseKey(const gbee::Key& key, int framesDelay) const
 {
-	if (!m_SystemEnabled)
+	if (!m_SystemEnabled || m_Emulator.GetPauseState(0))
 		return false;
 	
 	const bool value{ m_Frames % framesDelay == 0 };
@@ -480,7 +480,7 @@ bool TetrisSystem::UseKey(const gbee::Key& key, int framesDelay) const
 
 void TetrisSystem::SetKey(const gbee::Key& key, bool value) const
 {
-	if (!m_SystemEnabled)
+	if (!m_SystemEnabled || m_Emulator.GetPauseState(0))
 		return;
 	
 	m_Emulator.SetKeyState(key, value, 0);
