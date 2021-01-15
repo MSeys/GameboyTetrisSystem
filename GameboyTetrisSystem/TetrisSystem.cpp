@@ -307,10 +307,15 @@ void TetrisSystem::UpdateSystem()
 
 	else if (m_CurrentMenu == TetrisMenu::GAME_OVER)
 	{
-		if (m_DisableOnGameOver)
-			m_SystemEnabled = false;
 		
-		SetKey(gbee::down, false);
+		if (m_DisableOnGameOver)
+		{
+			ResetKeys();
+			SetKey(gbee::down, false);
+			
+			m_SystemEnabled = false;
+		}
+		
 		UseKey(gbee::Key::start, m_KeyDelay);
 	}
 
