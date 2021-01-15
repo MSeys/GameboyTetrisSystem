@@ -307,14 +307,10 @@ void TetrisSystem::UpdateSystem()
 
 	else if (m_CurrentMenu == TetrisMenu::GAME_OVER)
 	{
-		
-		if (m_DisableOnGameOver)
-		{
-			ResetKeys();
-			SetKey(gbee::down, false);
-			
+		SetKey(gbee::down, false);
+
+		if (m_DisableOnGameOver)		
 			m_SystemEnabled = false;
-		}
 		
 		UseKey(gbee::Key::start, m_KeyDelay);
 	}
@@ -493,13 +489,13 @@ void TetrisSystem::SetKey(const gbee::Key& key, bool value) const
 
 void TetrisSystem::ResetKeys() const
 {
-	SetKey(gbee::aButton, false);
-	SetKey(gbee::bButton, false);
-	SetKey(gbee::start, false);
-	SetKey(gbee::select, false);
-	SetKey(gbee::left, false);
-	SetKey(gbee::right, false);
-	SetKey(gbee::up, false);
+	m_Emulator.SetKeyState(gbee::aButton, false, 0);
+	m_Emulator.SetKeyState(gbee::bButton, false, 0);
+	m_Emulator.SetKeyState(gbee::start, false, 0);
+	m_Emulator.SetKeyState(gbee::select, false, 0);
+	m_Emulator.SetKeyState(gbee::left, false, 0);
+	m_Emulator.SetKeyState(gbee::right, false, 0);
+	m_Emulator.SetKeyState(gbee::up, false, 0);
 }
 
 
