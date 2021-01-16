@@ -417,7 +417,6 @@ void TetrisSystem::UpdateBestMoveTexture()
 TetrisMenu TetrisSystem::CheckMenu() const
 {
 	const auto R1 = SystemUtils::GetPixels({ 0, 0 }, { GAMEBOY_SCREEN_X - 1, 0 }, GetPixelBuffer());
-	const auto R2 = SystemUtils::GetPixels({ 0, 1 }, { GAMEBOY_SCREEN_X - 1, 1 }, GetPixelBuffer());
 
 	const int nrBlackR1 = SystemUtils::CountVector2D<uint8_t>(R1, COLOR_BLACK);
 	const int nrWhiteR1 = SystemUtils::CountVector2D<uint8_t>(R1, COLOR_WHITE);
@@ -451,8 +450,10 @@ TetrisMenu TetrisSystem::CheckMenu() const
 		return TetrisMenu::PLAY;
 	}
 
-	// If none of the above are applicable, then there is one case left of the playfield going game over (blocks come from bottom to top)
-	// Note, this is also applicable when a piece border is at the edge, hence we instead return Credits to avoid any actions taken as the next part of game over will be shown later on.
+	// If none of the above are applicable, there are two possible cases:
+	// 1. Game Over blocks coming from down to top
+	// 2. Block edge on top row (happens when it rotates before moving down)
+	// We return Credits to avoid any special actions taken (e.g. key presses).
 	return TetrisMenu::CREDITS;
 
 }
