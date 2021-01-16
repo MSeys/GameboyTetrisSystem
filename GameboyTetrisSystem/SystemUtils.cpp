@@ -300,16 +300,17 @@ BestTetrisMove SystemUtils::GetBestTetrisMove(const TetrisBlocksContainer& playf
 			
 			for (int m{}; m < int(allMoves[prev].size()); m++)
 			{
-				// if next piece has no valid moves, then it is pointless to keep going
 				auto moves = GetAllTetrisMoves(allMoves[prev][m].newPlayfield, pieces[p]);
-				if (moves.empty())
-					return { false };
 
 				for (TetrisMove& possibleMove : moves)
 					possibleMove.pPrevMove = &allMoves[prev][m];
 				
 				allMoves[p].insert(allMoves[p].end(), moves.begin(), moves.end());
 			}
+
+			// if piece has no valid moves, return empty as it should always give a move where all pieces fit.
+			if (allMoves[p].empty())
+				return { false };
 		}
 	}
 
